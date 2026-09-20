@@ -103,7 +103,7 @@ class GlassDefaults {
     if (!radius.isFinite) {
       return maxSafeRadius;
     }
-    return radius.clamp(0.0, maxSafeRadius);
+    return radius.clamp(0.0, maxSafeRadius).toDouble();
   }
 
   /// Converts a radius to a [Radius.circular] with safe finite bounds.
