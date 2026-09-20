@@ -124,6 +124,24 @@ void main() {
       );
       expect(find.byType(LightweightLiquidGlass), findsOneWidget);
     });
+
+    testWidgets(
+        'renders with LiquidRoundedRectangle(borderRadius: double.infinity) without collapsing ClipRRect to 0.0',
+        (tester) async {
+      await tester.pumpWidget(
+        createTestApp(
+          child: LightweightLiquidGlass(
+            shape: const LiquidRoundedRectangle(borderRadius: double.infinity),
+            child: const SizedBox(width: 100, height: 50),
+          ),
+        ),
+      );
+      expect(find.byType(LightweightLiquidGlass), findsOneWidget);
+      final clipRRect = tester.widget<ClipRRect>(find.byType(ClipRRect));
+      final radius = clipRRect.borderRadius as BorderRadius;
+      expect(radius.topLeft.x.isFinite, isTrue);
+      expect(radius.topLeft.x, greaterThan(0.0));
+    });
   });
 
   group('LightweightLiquidGlass platform brightness paths', () {

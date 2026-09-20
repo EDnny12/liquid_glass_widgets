@@ -2,6 +2,7 @@ import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 import 'package:flutter/cupertino.dart';
+import '../../constants/glass_defaults.dart';
 import '../../src/renderer/liquid_glass_renderer.dart';
 import '../../theme/glass_theme.dart';
 import 'package:flutter/foundation.dart'
@@ -658,29 +659,11 @@ class AdaptiveGlass extends StatelessWidget {
 
   /// Extracts a [BorderRadius] from a [LiquidShape] for shadow decoration.
   static BorderRadius? _borderRadiusFromShape(LiquidShape shape) {
-    if (shape is LiquidRoundedSuperellipse) {
-      return BorderRadius.circular(shape.borderRadius);
-    }
-    if (shape is LiquidRoundedRectangle) {
-      return BorderRadius.circular(shape.borderRadius);
-    }
-    if (shape is LiquidVerticalRoundedSuperellipse) {
-      return BorderRadius.vertical(
-        top: Radius.circular(shape.topRadius),
-        bottom: Radius.circular(shape.bottomRadius),
-      );
-    }
-    if (shape is LiquidVerticalRoundedRectangle) {
-      return BorderRadius.vertical(
-        top: Radius.circular(shape.topRadius),
-        bottom: Radius.circular(shape.bottomRadius),
-      );
-    }
     if (shape is LiquidOval) {
       // Large radius approximation for oval/circle shapes.
-      return BorderRadius.circular(9999);
+      return BorderRadius.circular(GlassDefaults.capsuleRadius);
     }
-    return null;
+    return shape.toBorderRadius();
   }
 }
 
@@ -1081,21 +1064,8 @@ class _FrostedFallback extends StatelessWidget {
   /// the specular rim on their straight edges looks like a Material divider
   /// rather than an internal glass reflection.
   static bool _isFlatEdge(LiquidShape shape) {
-    if (shape is LiquidRoundedRectangle && shape.borderRadius == 0) return true;
-    if (shape is LiquidRoundedSuperellipse && shape.borderRadius == 0) {
-      return true;
-    }
-    if (shape is LiquidVerticalRoundedRectangle &&
-        shape.topRadius == 0 &&
-        shape.bottomRadius == 0) {
-      return true;
-    }
-    if (shape is LiquidVerticalRoundedSuperellipse &&
-        shape.topRadius == 0 &&
-        shape.bottomRadius == 0) {
-      return true;
-    }
-    return false;
+    final br = shape.toBorderRadius();
+    return br != null && br == BorderRadius.zero;
   }
 }
 
@@ -1272,31 +1242,16 @@ class _ShapeClip extends StatelessWidget {
     // iOS-continuous-curve fidelity. ClipRSuperellipse matches the shader SDF
     // boundary precisely, eliminating the clip/shader mismatch that caused
     // sub-pixel edge fringing on the frosted fallback path.
-    if (shape is LiquidRoundedSuperellipse) {
-      return ClipRSuperellipse(
-        borderRadius: BorderRadius.all(Radius.circular(shape.borderRadius)),
-        child: child,
-      );
-    }
-    if (shape is LiquidVerticalRoundedSuperellipse) {
-      return ClipRSuperellipse(
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(shape.topRadius),
-          bottom: Radius.circular(shape.bottomRadius),
-        ),
-        child: child,
-      );
-    }
-
-    if (shape is LiquidRoundedRectangle) {
-      return ClipRRect(
-        borderRadius: BorderRadius.all(Radius.circular((shape).borderRadius)),
-        child: child,
-      );
+    final borderRadius = shape.toBorderRadius();
+    if (borderRadius != null) {
+      if (shape.isSuperellipse) {
+        return ClipRSuperellipse(borderRadius: borderRadius, child: child);
+      }
+      return ClipRRect(borderRadius: borderRadius, child: child);
     }
 
     return ClipPath(
-      clipper: ShapeBorderClipper(shape: shape),
+      clipper: ShapeBorderClipper(shape: shape.toOutlinedBorder()),
       child: child,
     );
   }

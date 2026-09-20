@@ -406,4 +406,70 @@ void main() {
       );
     });
   });
+
+  group('AdaptiveGlass infinite borderRadius handling', () {
+    testWidgets(
+        'LiquidRoundedRectangle(borderRadius: double.infinity) routes ClipRRect with finite radius',
+        (tester) async {
+      await tester.pumpWidget(
+        createTestApp(
+          child: const AdaptiveGlass(
+            shape: LiquidRoundedRectangle(borderRadius: double.infinity),
+            settings: _settings,
+            quality: GlassQuality.standard,
+            child: SizedBox(width: 60, height: 60),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final clipRRect = tester.widget<ClipRRect>(find.byType(ClipRRect));
+      final radius = clipRRect.borderRadius as BorderRadius;
+      expect(radius.topLeft.x.isFinite, isTrue);
+      expect(radius.topLeft.x, greaterThan(0.0));
+    });
+
+    testWidgets(
+        'LiquidRoundedRectangle(borderRadius: double.infinity) with drop shadow creates finite BorderRadius for decoration',
+        (tester) async {
+      await tester.pumpWidget(
+        createTestApp(
+          theme: ThemeData(brightness: Brightness.light),
+          child: const AdaptiveGlass(
+            shape: LiquidRoundedRectangle(borderRadius: double.infinity),
+            settings: LiquidGlassSettings(
+              shadowElevation: 8,
+            ),
+            child: SizedBox(width: 60, height: 60),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final decBox =
+          tester.widget<DecoratedBox>(find.byType(DecoratedBox).first);
+      final boxDec = decBox.decoration as BoxDecoration;
+      final radius = boxDec.borderRadius as BorderRadius;
+      expect(radius.topLeft.x.isFinite, isTrue);
+      expect(radius.topLeft.x, greaterThan(0.0));
+    });
+
+    testWidgets(
+        'platformViewBackdrop with infinite borderRadius routes ClipRRect with finite radius',
+        (tester) async {
+      await tester.pumpWidget(
+        createTestApp(
+          child: const AdaptiveGlass(
+            shape: LiquidRoundedRectangle(borderRadius: double.infinity),
+            settings: _settings,
+            platformViewBackdrop: true,
+            child: SizedBox(width: 60, height: 60),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final clipRRect = tester.widget<ClipRRect>(find.byType(ClipRRect).first);
+      final radius = clipRRect.borderRadius as BorderRadius;
+      expect(radius.topLeft.x.isFinite, isTrue);
+      expect(radius.topLeft.x, greaterThan(0.0));
+    });
+  });
 }
