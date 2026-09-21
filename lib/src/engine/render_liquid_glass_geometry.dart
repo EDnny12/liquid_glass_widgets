@@ -12,6 +12,7 @@ import 'dart:ui';
 import 'package:flutter/foundation.dart';
 
 import 'package:flutter/rendering.dart';
+import '../../constants/glass_defaults.dart';
 import '../renderer/fragment_shader_extensions.dart';
 import 'liquid_glass.dart';
 import 'liquid_glass_blend_group.dart';
@@ -521,15 +522,15 @@ class ShapeGeometry {
   static double _getRadiusFromGlassShape(LiquidShape shape) {
     switch (shape) {
       case LiquidRoundedSuperellipse():
-        return shape.borderRadius;
+        return GlassDefaults.safeRadius(shape.borderRadius);
       case LiquidRoundedRectangle():
-        return shape.borderRadius;
+        return GlassDefaults.safeRadius(shape.borderRadius);
       case LiquidVerticalRoundedRectangle():
-        return shape.topRadius;
+        return GlassDefaults.safeRadius(shape.topRadius);
       case LiquidOval():
         return 0;
       case LiquidVerticalRoundedSuperellipse():
-        return shape.topRadius;
+        return GlassDefaults.safeRadius(shape.topRadius);
     }
   }
 
@@ -543,15 +544,15 @@ class ShapeGeometry {
   static double _getBottomRadiusFromGlassShape(LiquidShape shape) {
     switch (shape) {
       case LiquidRoundedSuperellipse():
-        return shape.borderRadius;
+        return GlassDefaults.safeRadius(shape.borderRadius);
       case LiquidRoundedRectangle():
-        return shape.borderRadius;
+        return GlassDefaults.safeRadius(shape.borderRadius);
       case LiquidVerticalRoundedRectangle():
-        return shape.bottomRadius;
+        return GlassDefaults.safeRadius(shape.bottomRadius);
       case LiquidOval():
         return 0;
       case LiquidVerticalRoundedSuperellipse():
-        return shape.bottomRadius;
+        return GlassDefaults.safeRadius(shape.bottomRadius);
     }
   }
 

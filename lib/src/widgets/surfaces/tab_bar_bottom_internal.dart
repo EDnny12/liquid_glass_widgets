@@ -752,7 +752,8 @@ class TabIndicatorState extends State<TabIndicator>
         clipper: _InverseBarClipper(_barShape),
         child: DecoratedBox(
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(widget.barBorderRadius),
+            borderRadius:
+                GlassDefaults.safeBorderRadius(widget.barBorderRadius),
             boxShadow: shadows,
           ),
         ),
