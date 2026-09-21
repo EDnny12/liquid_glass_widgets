@@ -136,5 +136,43 @@ void main() {
 
       handle.dispose();
     });
+
+    testWidgets('under RTL the tap action reports the logical index', (
+      tester,
+    ) async {
+      final handle = tester.ensureSemantics();
+      var selected = -1;
+      await tester.pumpWidget(
+        createTestApp(
+          child: Directionality(
+            textDirection: TextDirection.rtl,
+            child: GlassTabBar.searchable(
+              tabs: tabs,
+              selectedIndex: 1,
+              onTabSelected: (i) => selected = i,
+              maskingQuality: MaskingQuality.off,
+              searchConfig: GlassSearchBarConfig(onSearchToggle: (_) {}),
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+
+      tester.semantics.performAction(
+        find.semantics.byLabel('Home'),
+        SemanticsAction.tap,
+      );
+      await tester.pump();
+      expect(selected, 0);
+
+      tester.semantics.performAction(
+        find.semantics.byLabel('Profile'),
+        SemanticsAction.tap,
+      );
+      await tester.pump();
+      expect(selected, 2);
+
+      handle.dispose();
+    });
   });
 }

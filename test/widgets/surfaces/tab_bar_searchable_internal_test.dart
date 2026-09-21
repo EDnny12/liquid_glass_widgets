@@ -1084,5 +1084,48 @@ void main() {
       final stretch = stretchOf(tester);
       expect(stretch.stretch, 0.0);
     });
+
+    testWidgets(
+        'SearchableTabIndicatorState and SearchPillState buildShadowOverlay handle infinite barBorderRadius in light mode',
+        (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: ThemeData(brightness: Brightness.light),
+          home: Scaffold(
+            body: AdaptiveLiquidGlassLayer(
+              settings: const LiquidGlassSettings(shadowElevation: 8),
+              child: GlassTabBar.searchable(
+                tabs: const [
+                  GlassTab(label: 'Home', icon: Icon(Icons.home)),
+                  GlassTab(label: 'Search', icon: Icon(Icons.search)),
+                ],
+                selectedIndex: 0,
+                onTabSelected: (_) {},
+                searchConfig: GlassSearchBarConfig(onSearchToggle: (_) {}),
+                barBorderRadius: double.infinity,
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final searchIndicatorState = tester.state<SearchableTabIndicatorState>(
+          find.byType(SearchableTabIndicator));
+      final searchIndicatorContext =
+          tester.element(find.byType(SearchableTabIndicator));
+      final indicatorOverlay =
+          searchIndicatorState.buildShadowOverlay(searchIndicatorContext);
+      expect(indicatorOverlay, isNotNull);
+
+      final searchPillState =
+          tester.state<SearchPillState>(find.byType(SearchPill));
+      final searchPillContext = tester.element(find.byType(SearchPill));
+      final pillOverlay = searchPillState.buildShadowOverlay(
+        searchPillContext,
+        const LiquidRoundedRectangle(borderRadius: double.infinity),
+      );
+      expect(pillOverlay, isNotNull);
+    });
   });
 }

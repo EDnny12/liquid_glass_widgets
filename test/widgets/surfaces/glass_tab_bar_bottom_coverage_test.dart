@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
+import 'package:liquid_glass_widgets/src/widgets/surfaces/tab_bar_bottom_internal.dart';
 
 Widget _wrap(Widget child) => MaterialApp(
       home: Scaffold(body: LiquidGlassWidgets.wrap(child: child)),
@@ -106,6 +107,37 @@ void main() {
       ));
       await tester.pump();
       expect(find.byType(SizedBox), findsWidgets);
+    });
+
+    testWidgets(
+        'shadow layer renders with infinite barBorderRadius without collapsing',
+        (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: ThemeData(brightness: Brightness.light),
+          home: Scaffold(
+            body: AdaptiveLiquidGlassLayer(
+              settings: const LiquidGlassSettings(shadowElevation: 8),
+              child: SizedBox(
+                height: 100,
+                child: GlassTabBar.bottom(
+                  tabs: [_tab('Home'), _tab('Profile')],
+                  selectedIndex: 0,
+                  onTabSelected: (_) {},
+                  barBorderRadius: double.infinity,
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.byType(GlassTabBar), findsOneWidget);
+
+      final state = tester.state<TabIndicatorState>(find.byType(TabIndicator));
+      final overlay =
+          state.buildShadowOverlay(tester.element(find.byType(TabIndicator)));
+      expect(overlay, isNotNull);
     });
 
     testWidgets('standard quality bar renders', (tester) async {

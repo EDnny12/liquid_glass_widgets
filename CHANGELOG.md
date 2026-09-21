@@ -1,3 +1,13 @@
+# 1.7.1
+
+## Bug Fixes
+
+- **Prevent infinite `borderRadius` from collapsing clipping and shadows (#339):** Guards against `double.infinity` evaluating to `0.0` in Flutter's corner-scaling formula across clipping layers, drop shadows, and shader uniforms. Centralizes safe radius handling on `GlassDefaults` and `LiquidShape`.
+
+  Thanks to [@iimrudy](https://github.com/iimrudy) for the fix (#339).
+
+- **`GlassTabBar.searchable` RTL support (fixes #338):** Fixes miscalculated indicator positioning, drag hit-testing, and tab selection under `TextDirection.rtl`.
+
 # 1.7.0
 
 ## Features

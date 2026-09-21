@@ -4,6 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import 'package:liquid_glass_widgets/src/engine/liquid_glass.dart';
+import 'package:liquid_glass_widgets/src/engine/render_liquid_glass_geometry.dart';
+
+class _FakeRenderLiquidGlass extends Fake implements RenderLiquidGlass {
+  @override
+  String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) =>
+      '_FakeRenderLiquidGlass';
+}
 
 void main() {
   // ──────────────────────────────────────────────────────────────────────────
@@ -358,6 +365,119 @@ void main() {
       final path = shape.getOuterPath(const Rect.fromLTWH(0, 0, 100, 100));
       expect(path.contains(const Offset(1, 1)), isFalse);
       expect(path.contains(const Offset(50, 50)), isTrue);
+    });
+  });
+
+  group('ShapeGeometry safe radius handling for shader uniforms', () {
+    final fakeRender = _FakeRenderLiquidGlass();
+
+    test('LiquidRoundedSuperellipse extracts safe finite corner radii', () {
+      final geom = ShapeGeometry(
+        renderObject: fakeRender,
+        shape: const LiquidRoundedSuperellipse(borderRadius: 16),
+        glassContainsChild: false,
+        shapeBounds: const Rect.fromLTWH(0, 0, 100, 50),
+      );
+      expect(geom.rawCornerRadius, equals(16.0));
+      expect(geom.rawBottomCornerRadius, equals(16.0));
+
+      final infGeom = ShapeGeometry(
+        renderObject: fakeRender,
+        shape: const LiquidRoundedSuperellipse(borderRadius: double.infinity),
+        glassContainsChild: false,
+        shapeBounds: const Rect.fromLTWH(0, 0, 100, 50),
+      );
+      expect(infGeom.rawCornerRadius, equals(GlassDefaults.maxSafeRadius));
+      expect(
+          infGeom.rawBottomCornerRadius, equals(GlassDefaults.maxSafeRadius));
+    });
+
+    test('LiquidRoundedRectangle extracts safe finite corner radii', () {
+      final geom = ShapeGeometry(
+        renderObject: fakeRender,
+        shape: const LiquidRoundedRectangle(borderRadius: 20),
+        glassContainsChild: false,
+        shapeBounds: const Rect.fromLTWH(0, 0, 100, 50),
+      );
+      expect(geom.rawCornerRadius, equals(20.0));
+      expect(geom.rawBottomCornerRadius, equals(20.0));
+
+      final infGeom = ShapeGeometry(
+        renderObject: fakeRender,
+        shape: const LiquidRoundedRectangle(borderRadius: double.infinity),
+        glassContainsChild: false,
+        shapeBounds: const Rect.fromLTWH(0, 0, 100, 50),
+      );
+      expect(infGeom.rawCornerRadius, equals(GlassDefaults.maxSafeRadius));
+      expect(
+          infGeom.rawBottomCornerRadius, equals(GlassDefaults.maxSafeRadius));
+    });
+
+    test('LiquidVerticalRoundedRectangle extracts safe finite corner radii',
+        () {
+      final geom = ShapeGeometry(
+        renderObject: fakeRender,
+        shape: const LiquidVerticalRoundedRectangle(
+          topRadius: 10,
+          bottomRadius: 30,
+        ),
+        glassContainsChild: false,
+        shapeBounds: const Rect.fromLTWH(0, 0, 100, 50),
+      );
+      expect(geom.rawCornerRadius, equals(10.0));
+      expect(geom.rawBottomCornerRadius, equals(30.0));
+
+      final infGeom = ShapeGeometry(
+        renderObject: fakeRender,
+        shape: const LiquidVerticalRoundedRectangle(
+          topRadius: double.infinity,
+          bottomRadius: double.infinity,
+        ),
+        glassContainsChild: false,
+        shapeBounds: const Rect.fromLTWH(0, 0, 100, 50),
+      );
+      expect(infGeom.rawCornerRadius, equals(GlassDefaults.maxSafeRadius));
+      expect(
+          infGeom.rawBottomCornerRadius, equals(GlassDefaults.maxSafeRadius));
+    });
+
+    test('LiquidVerticalRoundedSuperellipse extracts safe finite corner radii',
+        () {
+      final geom = ShapeGeometry(
+        renderObject: fakeRender,
+        shape: const LiquidVerticalRoundedSuperellipse(
+          topRadius: 12,
+          bottomRadius: 24,
+        ),
+        glassContainsChild: false,
+        shapeBounds: const Rect.fromLTWH(0, 0, 100, 50),
+      );
+      expect(geom.rawCornerRadius, equals(12.0));
+      expect(geom.rawBottomCornerRadius, equals(24.0));
+
+      final infGeom = ShapeGeometry(
+        renderObject: fakeRender,
+        shape: const LiquidVerticalRoundedSuperellipse(
+          topRadius: double.infinity,
+          bottomRadius: double.infinity,
+        ),
+        glassContainsChild: false,
+        shapeBounds: const Rect.fromLTWH(0, 0, 100, 50),
+      );
+      expect(infGeom.rawCornerRadius, equals(GlassDefaults.maxSafeRadius));
+      expect(
+          infGeom.rawBottomCornerRadius, equals(GlassDefaults.maxSafeRadius));
+    });
+
+    test('LiquidOval extracts 0.0 corner radii', () {
+      final geom = ShapeGeometry(
+        renderObject: fakeRender,
+        shape: const LiquidOval(),
+        glassContainsChild: false,
+        shapeBounds: const Rect.fromLTWH(0, 0, 100, 50),
+      );
+      expect(geom.rawCornerRadius, equals(0.0));
+      expect(geom.rawBottomCornerRadius, equals(0.0));
     });
   });
 

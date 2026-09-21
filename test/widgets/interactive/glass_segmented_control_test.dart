@@ -785,5 +785,26 @@ void main() {
         await tester.pumpAndSettle();
       });
     });
+
+    testWidgets(
+        'GlassSegmentedControl.scrollable with infinite borderRadius renders without collapsing',
+        (tester) async {
+      await tester.pumpWidget(
+        createTestApp(
+          child: GlassSegmentedControl.scrollable(
+            segments: const [
+              GlassSegment(label: 'Day'),
+              GlassSegment(label: 'Week'),
+              GlassSegment(label: 'Month'),
+            ],
+            selectedIndex: 0,
+            onSegmentSelected: (_) {},
+            borderRadius: double.infinity,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.byType(GlassSegmentedControl), findsOneWidget);
+    });
   });
 }
