@@ -1,3 +1,19 @@
+# 1.7.2
+
+## Bug Fixes
+
+- **`GlassTabBar` no longer exposes an unlabelled bar-wide semantics node (fixes #340, PR #343):** The drag and tap detector that spans the full bar is now excluded from semantics across both `GlassTabBar.bottom` and `GlassTabBar.searchable`, leaving the labelled per-tab controls as the only announced actions.
+
+  Thanks to [@DeepanshuPal](https://github.com/DeepanshuPal) for the fix (#343).
+
+- **`GlassTabBar` default indicator follows app brightness (fixes #341, PR #344):** The selected pill now resolves its default black/white tint through `GlassTheme.brightnessOf(context)` across both `GlassTabBar.bottom` and `GlassTabBar.searchable` instead of the device appearance, so app-level light and dark overrides remain visible.
+
+  Thanks to [@DeepanshuPal](https://github.com/DeepanshuPal) for the fix (#344).
+
+- **iOS Reduce Motion is now respected (fixes #342, PR #345):** Accessibility motion handling now combines Flutter's `disableAnimations` flag with iOS's separate `reduceMotion` platform feature, including popover, menu, and modal-sheet morph controllers.
+
+  Thanks to [@DeepanshuPal](https://github.com/DeepanshuPal) for the fix (#345).
+
 # 1.7.1
 
 ## Bug Fixes

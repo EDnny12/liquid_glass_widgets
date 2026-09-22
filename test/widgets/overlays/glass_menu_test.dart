@@ -792,6 +792,71 @@ void main() {
     expect(find.text('EarlyItem'), findsOneWidget);
   });
 
+  testWidgets(
+      'GlassMenu items present immediately with GlassAccessibilityScope(reduceMotion: true)',
+      (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: Center(
+            child: GlassAccessibilityScope(
+              reduceMotion: true,
+              child: GlassMenu(
+                trigger: const SizedBox(
+                    width: 60, height: 40, child: Text('InstantMenu')),
+                items: [
+                  GlassMenuItem(title: 'InstantItem', onTap: () {}),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    // Tap to open — with reduceMotion (instant spring stiffness 500), the morph settles
+    // well within 150ms, whereas normal spring (~375ms) is still travelling.
+    await tester.tap(find.text('InstantMenu'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 150));
+
+    expect(find.text('InstantItem'), findsOneWidget);
+
+    await tester.pumpAndSettle();
+  });
+
+  testWidgets(
+      'GlassMenu items present within 150ms with platform reduceMotion: true',
+      (tester) async {
+    tester.platformDispatcher.accessibilityFeaturesTestValue =
+        const FakeAccessibilityFeatures(reduceMotion: true);
+    addTearDown(tester.platformDispatcher.clearAccessibilityFeaturesTestValue);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: Center(
+            child: GlassMenu(
+              trigger: const SizedBox(
+                  width: 60, height: 40, child: Text('PlatformInstantMenu')),
+              items: [
+                GlassMenuItem(title: 'PlatformInstantItem', onTap: () {}),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('PlatformInstantMenu'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 150));
+
+    expect(find.text('PlatformInstantItem'), findsOneWidget);
+
+    await tester.pumpAndSettle();
+  });
+
   // ── Route-aware dismissal tests (#274) ────────────────────────────────────
   testWidgets(
       'GlassMenu dismisses instantly on route navigation without overlapping destination (#274)',

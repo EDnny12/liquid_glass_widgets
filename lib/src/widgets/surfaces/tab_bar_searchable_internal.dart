@@ -214,8 +214,6 @@ class SearchableTabIndicatorState extends State<SearchableTabIndicator>
   @override
   void notifyTabChanged(int index) => widget.onTabChanged(index);
 
-  static const _fallbackIndicatorColor = Color(0x1AFFFFFF);
-
   /// RepaintBoundary key for the merged icon layer, so the premium indicator can
   /// refract the icons (capturable) over a PlatformView.
   final GlobalKey _iconLayerKey = GlobalKey();
@@ -294,10 +292,11 @@ class SearchableTabIndicatorState extends State<SearchableTabIndicator>
     }
 
     // ── Normal draggable tab bar — identical logic to GlassTabBar.bottom ─────
-    final theme = CupertinoTheme.of(context);
+    final brightness = GlassTheme.brightnessOf(context);
     final indicatorColor = widget.indicatorColor ??
-        theme.textTheme.textStyle.color?.withValues(alpha: .1) ??
-        _fallbackIndicatorColor;
+        (brightness == Brightness.dark
+            ? CupertinoColors.white.withValues(alpha: .1)
+            : CupertinoColors.black.withValues(alpha: .1));
     final targetAlignment = computeTabAlignment(widget.tabIndex);
     // Nested-arc default: if the outer bar is a capsule sentinel (≥ 9999),
     // the indicator is also passed 9999 directly, so the glass shader clamps to
@@ -340,6 +339,7 @@ class SearchableTabIndicatorState extends State<SearchableTabIndicator>
               child: GestureDetector(
                 key: ValueKey(gestureEpoch),
                 behavior: HitTestBehavior.opaque,
+                excludeFromSemantics: true,
                 onHorizontalDragDown: onBarDragDown,
                 onHorizontalDragStart: onBarDragStart,
                 onHorizontalDragUpdate: onBarDragUpdate,

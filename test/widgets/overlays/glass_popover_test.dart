@@ -903,4 +903,67 @@ void main() {
 
     await tester.pumpAndSettle();
   });
+
+  testWidgets(
+      'GlassPopover content presents within 150ms with GlassAccessibilityScope(reduceMotion: true)',
+      (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: Center(
+            child: GlassAccessibilityScope(
+              reduceMotion: true,
+              child: GlassPopover(
+                popoverHeight: 100,
+                trigger: const SizedBox(
+                    width: 60, height: 40, child: Text('InstantPopover')),
+                contentBuilder: (context, close) =>
+                    const Text('InstantPopoverContent'),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('InstantPopover'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 150));
+
+    expect(find.text('InstantPopoverContent'), findsOneWidget);
+
+    await tester.pumpAndSettle();
+  });
+
+  testWidgets(
+      'GlassPopover content presents within 150ms with platform reduceMotion: true',
+      (tester) async {
+    tester.platformDispatcher.accessibilityFeaturesTestValue =
+        const FakeAccessibilityFeatures(reduceMotion: true);
+    addTearDown(tester.platformDispatcher.clearAccessibilityFeaturesTestValue);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: Center(
+            child: GlassPopover(
+              popoverHeight: 100,
+              trigger: const SizedBox(
+                  width: 60, height: 40, child: Text('PlatformPopover')),
+              contentBuilder: (context, close) =>
+                  const Text('PlatformPopoverContent'),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('PlatformPopover'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 150));
+
+    expect(find.text('PlatformPopoverContent'), findsOneWidget);
+
+    await tester.pumpAndSettle();
+  });
 }
