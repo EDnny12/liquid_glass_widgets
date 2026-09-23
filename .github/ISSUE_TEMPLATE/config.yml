@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 💬 Discussion / Question
+    url: https://github.com/sdegenaar/liquid_glass_widgets/discussions
+    about: Ask questions, share ideas, and discuss liquid_glass_widgets usage
+  - name: 📦 pub.dev Package
+    url: https://pub.dev/packages/liquid_glass_widgets
+    about: View the package on pub.dev

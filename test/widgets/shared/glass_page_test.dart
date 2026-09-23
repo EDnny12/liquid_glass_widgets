@@ -27,8 +27,12 @@ void main() {
     });
 
     testWidgets(
-        'overrides Scaffold backgroundColor to transparent when background provided in MaterialApp',
+        'passes child through without Theme wrapper when background provided in MaterialApp',
         (tester) async {
+      // GlassPage no longer injects a Theme to force Scaffold transparency.
+      // GlassScaffold handles its own background color on CupertinoPageScaffold.
+      // Users who use GlassPage with a raw Scaffold must set backgroundColor
+      // explicitly if they want transparency.
       await tester.pumpWidget(
         MaterialApp(
           home: GlassPage(
@@ -41,16 +45,22 @@ void main() {
       );
 
       expect(find.byKey(const Key('bg')), findsOneWidget);
-
-      // Scaffold is wrapped in a Theme that forces background to transparent
-      final theme = tester.widget<Theme>(find
-          .ancestor(of: find.byType(Scaffold), matching: find.byType(Theme))
-          .first);
-      expect(theme.data.scaffoldBackgroundColor, const Color(0x00000000));
+      expect(find.text('Content'), findsOneWidget);
+      // No Theme injection around child — GlassPage is now a pure host-agnostic wrapper.
+      final glassPageFinder = find.byType(GlassPage);
+      final themesInsidePage = find.descendant(
+        of: glassPageFinder,
+        matching: find.byType(Theme),
+      );
+      // Any Theme found inside GlassPage should not be from GlassPage itself
+      // (i.e., no scoped GlassTheme themeOverride wrapper — we didn't set one).
+      expect(
+          tester.widgetList<Theme>(themesInsidePage).where(
+              (t) => t.data.scaffoldBackgroundColor == const Color(0x00000000)),
+          isEmpty);
     });
 
-    testWidgets(
-        'skips Theme override in pure CupertinoApp (no MaterialLocalizations)',
+    testWidgets('works in pure CupertinoApp host with no Material ancestor',
         (tester) async {
       await tester.pumpWidget(
         CupertinoApp(
@@ -64,12 +74,7 @@ void main() {
       );
 
       expect(find.byKey(const Key('bg')), findsOneWidget);
-      // Because there is no MaterialLocalizations, it skips wrapping child in Theme.
-      expect(
-          find.ancestor(
-              of: find.byType(CupertinoPageScaffold),
-              matching: find.byType(Theme)),
-          findsNothing);
+      expect(find.text('Content'), findsOneWidget);
     });
 
     testWidgets('respects themeOverride parameter', (tester) async {

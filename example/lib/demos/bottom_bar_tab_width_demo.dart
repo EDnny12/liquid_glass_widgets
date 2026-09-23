@@ -9,6 +9,7 @@ library;
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+
 import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 
 void main() async {
@@ -87,13 +88,13 @@ class _TabWidthDemoPageState extends State<TabWidthDemoPage> {
           (_) => setState(() => _selected = clampedSelected));
     }
 
-    return Scaffold(
+    return GlassScaffold(
       resizeToAvoidBottomInset: false,
       body: Stack(
         children: [
           // ── Background gradient ─────────────────────────────────────────────
           Container(
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
@@ -111,31 +112,31 @@ class _TabWidthDemoPageState extends State<TabWidthDemoPage> {
           SafeArea(
             bottom: false,
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+              padding: EdgeInsets.fromLTRB(20, 16, 20, 0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     'tabWidth Demo',
                     style: TextStyle(
-                      color: Colors.white,
+                      color: CupertinoColors.white,
                       fontSize: 22,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  SizedBox(height: 4),
                   Text(
                     'Controls the tab pill width on both bar variants',
                     style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.5),
+                      color: CupertinoColors.white.withValues(alpha: 0.5),
                       fontSize: 13,
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  SizedBox(height: 20),
 
                   // Bar variant selector
                   _SectionLabel('BAR VARIANT'),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8),
                   _ChipRow(
                     options: const ['Searchable', 'Standalone'],
                     selected: _variant.index,
@@ -145,22 +146,22 @@ class _TabWidthDemoPageState extends State<TabWidthDemoPage> {
                     }),
                   ),
 
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16),
 
                   // Tab count selector
                   _SectionLabel('TAB COUNT'),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8),
                   _ChipRow(
                     options: _kCounts.map((c) => '$c tabs').toList(),
                     selected: _kCounts.indexOf(_tabCount),
                     onSelected: (i) => setState(() => _tabCount = _kCounts[i]),
                   ),
 
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16),
 
                   // tabWidth selector
                   _SectionLabel('TABWIDTH'),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8),
                   _ChipRow(
                     options: _kWidths.keys.toList(),
                     selected: _kWidths.values.toList().indexOf(_tabWidth),
@@ -170,9 +171,9 @@ class _TabWidthDemoPageState extends State<TabWidthDemoPage> {
 
                   // Extra button toggle (standalone only)
                   if (_variant == _BarVariant.standalone) ...[
-                    const SizedBox(height: 16),
+                    SizedBox(height: 16),
                     _SectionLabel('EXTRA BUTTON'),
-                    const SizedBox(height: 8),
+                    SizedBox(height: 8),
                     _ChipRow(
                       options: const ['None', 'Compose (+)'],
                       selected: _showExtraButton ? 1 : 0,
@@ -181,7 +182,7 @@ class _TabWidthDemoPageState extends State<TabWidthDemoPage> {
                     ),
                   ],
 
-                  const SizedBox(height: 24),
+                  SizedBox(height: 24),
 
                   // Live metrics
                   _MetricsCard(
@@ -225,7 +226,7 @@ class _TabWidthDemoPageState extends State<TabWidthDemoPage> {
                     quality: GlassQuality.premium,
                     extraButton: _showExtraButton
                         ? GlassTabBarExtraButton(
-                            icon: const Icon(CupertinoIcons.plus),
+                            icon: Icon(CupertinoIcons.plus),
                             label: 'Compose',
                             onTap: () {},
                           )
@@ -267,36 +268,36 @@ class _MetricsCard extends StatelessWidget {
         : 'GlassBottomBar';
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.07),
+        color: CupertinoColors.white.withValues(alpha: 0.07),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: Colors.white.withValues(alpha: 0.1),
+          color: CupertinoColors.white.withValues(alpha: 0.1),
         ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _MetricRow('Widget', variantLabel),
-          const SizedBox(height: 8),
+          SizedBox(height: 8),
           _MetricRow(
               'tabWidth', tabWidth != null ? '$tabWidth px' : 'null (expand)'),
-          const SizedBox(height: 8),
+          SizedBox(height: 8),
           _MetricRow('tabCount', '$tabCount'),
-          const SizedBox(height: 8),
+          SizedBox(height: 8),
           _MetricRow('Pill width', pillLabel),
           if (variant == _BarVariant.standalone) ...[
-            const SizedBox(height: 8),
+            SizedBox(height: 8),
             _MetricRow('Extra button', hasExtraButton ? 'Compose (+)' : 'none'),
           ],
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           Text(
             tabWidth != null
                 ? '✅ iOS 26 compact sizing — pill is proportional to tabs'
                 : '⬛ Expand (default) — tab pill fills all available space',
             style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.6),
+              color: CupertinoColors.white.withValues(alpha: 0.6),
               fontSize: 12,
             ),
           ),
@@ -318,12 +319,13 @@ class _MetricRow extends StatelessWidget {
       children: [
         Text(label,
             style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.5), fontSize: 13)),
+                color: CupertinoColors.white.withValues(alpha: 0.5),
+                fontSize: 13)),
         Flexible(
           child: Text(value,
               textAlign: TextAlign.end,
-              style: const TextStyle(
-                  color: Colors.white,
+              style: TextStyle(
+                  color: CupertinoColors.white,
                   fontSize: 13,
                   fontWeight: FontWeight.w600)),
         ),
@@ -345,7 +347,7 @@ class _SectionLabel extends StatelessWidget {
     return Text(
       text,
       style: TextStyle(
-        color: Colors.white.withValues(alpha: 0.55),
+        color: CupertinoColors.white.withValues(alpha: 0.55),
         fontSize: 12,
         fontWeight: FontWeight.w600,
         letterSpacing: 0.8,
@@ -377,23 +379,24 @@ class _ChipRow extends StatelessWidget {
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 180),
             curve: Curves.easeOut,
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+            padding: EdgeInsets.symmetric(horizontal: 14, vertical: 8),
             decoration: BoxDecoration(
               color: active
                   ? const Color(0xFF0A84FF)
-                  : Colors.white.withValues(alpha: 0.08),
+                  : CupertinoColors.white.withValues(alpha: 0.08),
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
                 color: active
-                    ? Colors.transparent
-                    : Colors.white.withValues(alpha: 0.12),
+                    ? const Color(0x00000000)
+                    : CupertinoColors.white.withValues(alpha: 0.12),
               ),
             ),
             child: Text(
               options[i],
               style: TextStyle(
-                color:
-                    active ? Colors.white : Colors.white.withValues(alpha: 0.7),
+                color: active
+                    ? CupertinoColors.white
+                    : CupertinoColors.white.withValues(alpha: 0.7),
                 fontSize: 13,
                 fontWeight: active ? FontWeight.w600 : FontWeight.w400,
               ),

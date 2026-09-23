@@ -1,0 +1,67 @@
+name: ✨ Feature Request
+description: Suggest a new widget, property, or improvement for liquid_glass_widgets
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Got an idea? We'd love to hear it! ✨
+        Check [open issues](https://github.com/sdegenaar/liquid_glass_widgets/issues) first to avoid duplicates.
+
+  - type: dropdown
+    id: feature-type
+    attributes:
+      label: What kind of feature?
+      multiple: false
+      options:
+        - New widget
+        - New property or option for an existing widget
+        - Animation or interaction improvement
+        - Performance improvement
+        - Platform support (Windows, Web, Linux, etc.)
+        - API / developer experience
+        - Documentation
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does this solve?
+      description: What are you trying to build that you can't do today?
+      placeholder: "I'm building an iOS-style notification tray and I need the glass blur to animate in/out smoothly, but there's no animated variant of LiquidGlassContainer."
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: What would you like to see?
+      description: Describe the feature. An API sketch is super helpful but not required.
+      placeholder: |
+        An `AnimatedLiquidGlassContainer` widget, or a `blurIntensity` animation curve property:
+
+        LiquidGlassContainer(
+          blurAnimationCurve: Curves.easeInOut,
+          blurAnimationDuration: Duration(milliseconds: 300),
+        )
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives or workarounds you've tried
+      description: Optional — did you find any hacky workarounds? They help us understand the scope.
+    validations:
+      required: false
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Anything else?
+      description: Screenshots, design references, Apple HIG links, Dribbble/visionOS inspiration, etc.
+    validations:
+      required: false

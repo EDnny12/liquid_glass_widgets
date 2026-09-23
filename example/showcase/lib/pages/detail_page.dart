@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 
@@ -71,8 +71,8 @@ class _DetailPageState extends State<DetailPage>
       ),
     );
 
-    return Scaffold(
-      backgroundColor: const Color(0xFF0A1929),
+    return GlassScaffold(
+      backgroundColor: Color(0xFF0A1929),
       body: Stack(
         children: [
           // Main scrollable content
@@ -80,13 +80,10 @@ class _DetailPageState extends State<DetailPage>
             controller: _scrollController,
             slivers: [
               // Hero image with parallax effect
-              SliverAppBar(
-                expandedHeight: 500,
-                pinned: false,
-                backgroundColor: Colors.transparent,
-                automaticallyImplyLeading: false,
-                flexibleSpace: FlexibleSpaceBar(
-                  background: Stack(
+              SliverToBoxAdapter(
+                child: SizedBox(
+                  height: 500,
+                  child: Stack(
                     fit: StackFit.expand,
                     children: [
                       // Parallax hero image
@@ -99,7 +96,7 @@ class _DetailPageState extends State<DetailPage>
                             fit: BoxFit.cover,
                             errorBuilder: (context, error, stackTrace) {
                               return Container(
-                                decoration: const BoxDecoration(
+                                decoration: BoxDecoration(
                                   gradient: LinearGradient(
                                     colors: [
                                       Color(0xFF4A90E2),
@@ -124,8 +121,8 @@ class _DetailPageState extends State<DetailPage>
                           decoration: BoxDecoration(
                             gradient: LinearGradient(
                               colors: [
-                                Colors.transparent,
-                                const Color(0xFF0A1929).withValues(alpha: 0.9),
+                                Color(0x00000000),
+                                Color(0xFF0A1929).withValues(alpha: 0.9),
                               ],
                               begin: Alignment.topCenter,
                               end: Alignment.bottomCenter,
@@ -141,22 +138,22 @@ class _DetailPageState extends State<DetailPage>
               // Content
               SliverToBoxAdapter(
                 child: Container(
-                  color: const Color(0xFF0A1929),
+                  color: Color(0xFF0A1929),
                   child: Padding(
-                    padding: const EdgeInsets.all(24.0),
+                    padding: EdgeInsets.all(24.0),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         _buildHeader(),
-                        const SizedBox(height: 24),
+                        SizedBox(height: 24),
                         _buildSegmentedControl(),
-                        const SizedBox(height: 24),
+                        SizedBox(height: 24),
                         _buildSelectedContent(),
-                        const SizedBox(height: 24),
+                        SizedBox(height: 24),
                         _buildHostInfo(),
-                        const SizedBox(height: 24),
+                        SizedBox(height: 24),
                         _buildLocation(),
-                        const SizedBox(height: 100),
+                        SizedBox(height: 100),
                       ],
                     ),
                   ),
@@ -170,7 +167,7 @@ class _DetailPageState extends State<DetailPage>
             opacity: _fadeAnimation,
             child: SafeArea(
               child: Padding(
-                padding: const EdgeInsets.all(16.0),
+                padding: EdgeInsets.all(16.0),
                 child: AdaptiveLiquidGlassLayer(
                   quality: ShowcaseGlassTheme.premiumQuality,
                   settings: ShowcaseGlassTheme.detailHeaderButtons,
@@ -178,7 +175,7 @@ class _DetailPageState extends State<DetailPage>
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       GlassButton(
-                        icon: Icon(Icons.arrow_back_ios_new),
+                        icon: Icon(CupertinoIcons.back),
                         iconSize: 20,
                         width: 44,
                         height: 44,
@@ -187,19 +184,20 @@ class _DetailPageState extends State<DetailPage>
                       Row(
                         children: [
                           GlassButton(
-                            icon: Icon(Icons.share_outlined),
+                            icon: Icon(CupertinoIcons.share),
                             iconSize: 22,
                             width: 44,
                             height: 44,
                             onTap: () {},
                           ),
-                          const SizedBox(width: 12),
+                          SizedBox(width: 12),
                           GlassButton(
                             icon: Icon(widget.isFavorite
-                                ? Icons.favorite
-                                : Icons.favorite_outline),
-                            iconColor:
-                                widget.isFavorite ? Colors.red : Colors.white,
+                                ? CupertinoIcons.heart_fill
+                                : CupertinoIcons.heart),
+                            iconColor: widget.isFavorite
+                                ? CupertinoColors.systemRed
+                                : CupertinoColors.white,
                             iconSize: 22,
                             width: 44,
                             height: 44,
@@ -223,9 +221,9 @@ class _DetailPageState extends State<DetailPage>
               opacity: _fadeAnimation,
               child: SafeArea(
                 child: Padding(
-                  padding: const EdgeInsets.all(20.0),
+                  padding: EdgeInsets.all(20.0),
                   child: GlassCard(
-                    padding: const EdgeInsets.all(16),
+                    padding: EdgeInsets.all(16),
                     shape: const LiquidRoundedSuperellipse(borderRadius: 20),
                     settings: ShowcaseGlassTheme.bookingCard,
                     child: Row(
@@ -234,17 +232,18 @@ class _DetailPageState extends State<DetailPage>
                           crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Text(
+                            Text(
                               'Price per night',
                               style: TextStyle(
-                                color: Colors.white70,
+                                color: CupertinoColors.white
+                                    .withValues(alpha: 0.70),
                                 fontSize: 12,
                               ),
                             ),
                             Text(
                               '\$${widget.destination.pricePerNight.toStringAsFixed(0)}',
-                              style: const TextStyle(
-                                color: Colors.white,
+                              style: TextStyle(
+                                color: CupertinoColors.white,
                                 fontSize: 24,
                                 fontWeight: FontWeight.w700,
                               ),
@@ -253,7 +252,7 @@ class _DetailPageState extends State<DetailPage>
                         ),
                         const Spacer(),
                         GlassButton(
-                          icon: Icon(Icons.calendar_month),
+                          icon: Icon(CupertinoIcons.calendar),
                           label: 'Book Now',
                           iconSize: 20,
                           width: 44,
@@ -280,66 +279,67 @@ class _DetailPageState extends State<DetailPage>
         Row(
           children: [
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
-                color: const Color(0xFF4A90E2).withValues(alpha: 0.2),
+                color: Color(0xFF4A90E2).withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                  color: const Color(0xFF4A90E2).withValues(alpha: 0.3),
+                  color: Color(0xFF4A90E2).withValues(alpha: 0.3),
                 ),
               ),
               child: Text(
                 widget.destination.category,
-                style: const TextStyle(
+                style: TextStyle(
                   color: Color(0xFF4A90E2),
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
                 ),
               ),
             ),
-            const SizedBox(width: 12),
-            const Icon(Icons.star, color: Colors.amber, size: 18),
-            const SizedBox(width: 4),
+            SizedBox(width: 12),
+            Icon(CupertinoIcons.star,
+                color: CupertinoColors.activeOrange, size: 18),
+            SizedBox(width: 4),
             Text(
               '${widget.destination.rating}',
-              style: const TextStyle(
-                color: Colors.white,
+              style: TextStyle(
+                color: CupertinoColors.white,
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
               ),
             ),
             Text(
               ' (${widget.destination.reviewCount} reviews)',
-              style: const TextStyle(
-                color: Colors.white60,
+              style: TextStyle(
+                color: CupertinoColors.white.withValues(alpha: 0.60),
                 fontSize: 14,
               ),
             ),
           ],
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: 12),
         Text(
           widget.destination.name,
-          style: const TextStyle(
-            color: Colors.white,
+          style: TextStyle(
+            color: CupertinoColors.white,
             fontSize: 32,
             fontWeight: FontWeight.w700,
             height: 1.2,
           ),
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: 8),
         Row(
           children: [
-            const Icon(
-              Icons.location_on_outlined,
-              color: Colors.white60,
+            Icon(
+              CupertinoIcons.location,
+              color: CupertinoColors.white.withValues(alpha: 0.60),
               size: 18,
             ),
-            const SizedBox(width: 4),
+            SizedBox(width: 4),
             Text(
               widget.destination.location,
-              style: const TextStyle(
-                color: Colors.white60,
+              style: TextStyle(
+                color: CupertinoColors.white.withValues(alpha: 0.60),
                 fontSize: 16,
               ),
             ),
@@ -383,19 +383,19 @@ class _DetailPageState extends State<DetailPage>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'About',
           style: TextStyle(
-            color: Colors.white,
+            color: CupertinoColors.white,
             fontSize: 20,
             fontWeight: FontWeight.w700,
           ),
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: 12),
         Text(
           widget.destination.longDescription,
-          style: const TextStyle(
-            color: Colors.white70,
+          style: TextStyle(
+            color: CupertinoColors.white.withValues(alpha: 0.70),
             fontSize: 15,
             height: 1.6,
           ),
@@ -408,29 +408,29 @@ class _DetailPageState extends State<DetailPage>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Guest Reviews',
           style: TextStyle(
-            color: Colors.white,
+            color: CupertinoColors.white,
             fontSize: 20,
             fontWeight: FontWeight.w700,
           ),
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: 16),
         _buildReviewCard(
           'Sarah Johnson',
           5,
           'Absolutely stunning! The views were breathtaking and the service was impeccable.',
           '2 weeks ago',
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: 12),
         _buildReviewCard(
           'Michael Chen',
           5,
           'Perfect getaway. Every detail was thoughtfully considered.',
           '1 month ago',
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: 12),
         _buildReviewCard(
           'Emma Williams',
           4,
@@ -443,12 +443,12 @@ class _DetailPageState extends State<DetailPage>
 
   Widget _buildReviewCard(String name, int rating, String review, String time) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
+        color: CupertinoColors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: Colors.white.withValues(alpha: 0.1),
+          color: CupertinoColors.white.withValues(alpha: 0.1),
         ),
       ),
       child: Column(
@@ -456,27 +456,30 @@ class _DetailPageState extends State<DetailPage>
         children: [
           Row(
             children: [
-              CircleAvatar(
-                radius: 20,
-                backgroundColor: const Color(0xFF4A90E2),
+              Container(
+                width: 40,
+                height: 40,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                    shape: BoxShape.circle, color: Color(0xFF4A90E2)),
                 child: Text(
                   name[0],
-                  style: const TextStyle(
-                    color: Colors.white,
+                  style: TextStyle(
+                    color: CupertinoColors.white,
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
               ),
-              const SizedBox(width: 12),
+              SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       name,
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: TextStyle(
+                        color: CupertinoColors.white,
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
                       ),
@@ -485,17 +488,18 @@ class _DetailPageState extends State<DetailPage>
                       children: [
                         ...List.generate(
                           rating,
-                          (index) => const Icon(
-                            Icons.star,
-                            color: Colors.amber,
+                          (index) => Icon(
+                            CupertinoIcons.star,
+                            color: CupertinoColors.activeOrange,
                             size: 14,
                           ),
                         ),
-                        const SizedBox(width: 8),
+                        SizedBox(width: 8),
                         Text(
                           time,
-                          style: const TextStyle(
-                            color: Colors.white60,
+                          style: TextStyle(
+                            color:
+                                CupertinoColors.white.withValues(alpha: 0.60),
                             fontSize: 12,
                           ),
                         ),
@@ -506,11 +510,11 @@ class _DetailPageState extends State<DetailPage>
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           Text(
             review,
-            style: const TextStyle(
-              color: Colors.white70,
+            style: TextStyle(
+              color: CupertinoColors.white.withValues(alpha: 0.70),
               fontSize: 14,
               height: 1.5,
             ),
@@ -524,49 +528,49 @@ class _DetailPageState extends State<DetailPage>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Amenities',
           style: TextStyle(
-            color: Colors.white,
+            color: CupertinoColors.white,
             fontSize: 20,
             fontWeight: FontWeight.w700,
           ),
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: 12),
         Wrap(
           spacing: 8,
           runSpacing: 8,
           children: widget.destination.amenities.map((amenity) {
             return Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.1),
+                color: CupertinoColors.white.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.2),
+                  color: CupertinoColors.white.withValues(alpha: 0.2),
                 ),
               ),
               child: Text(
                 amenity,
-                style: const TextStyle(
-                  color: Colors.white,
+                style: TextStyle(
+                  color: CupertinoColors.white,
                   fontSize: 13,
                 ),
               ),
             );
           }).toList(),
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: 16),
         Row(
           children: [
             _buildSpec(
-                Icons.people_outline, '${widget.destination.maxGuests} guests'),
-            const SizedBox(width: 16),
+                CupertinoIcons.group, '${widget.destination.maxGuests} guests'),
+            SizedBox(width: 16),
+            _buildSpec(CupertinoIcons.bed_double,
+                '${widget.destination.bedrooms} beds'),
+            SizedBox(width: 16),
             _buildSpec(
-                Icons.bed_outlined, '${widget.destination.bedrooms} beds'),
-            const SizedBox(width: 16),
-            _buildSpec(Icons.bathroom_outlined,
-                '${widget.destination.bathrooms} baths'),
+                CupertinoIcons.drop, '${widget.destination.bathrooms} baths'),
           ],
         ),
       ],
@@ -576,12 +580,13 @@ class _DetailPageState extends State<DetailPage>
   Widget _buildSpec(IconData icon, String label) {
     return Row(
       children: [
-        Icon(icon, color: Colors.white60, size: 18),
-        const SizedBox(width: 6),
+        Icon(icon,
+            color: CupertinoColors.white.withValues(alpha: 0.60), size: 18),
+        SizedBox(width: 6),
         Text(
           label,
-          style: const TextStyle(
-            color: Colors.white70,
+          style: TextStyle(
+            color: CupertinoColors.white.withValues(alpha: 0.70),
             fontSize: 14,
           ),
         ),
@@ -591,44 +596,47 @@ class _DetailPageState extends State<DetailPage>
 
   Widget _buildHostInfo() {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
+        color: CupertinoColors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: Colors.white.withValues(alpha: 0.1),
+          color: CupertinoColors.white.withValues(alpha: 0.1),
         ),
       ),
       child: Row(
         children: [
-          CircleAvatar(
-            radius: 28,
-            backgroundColor: const Color(0xFF4A90E2),
+          Container(
+            width: 56,
+            height: 56,
+            alignment: Alignment.center,
+            decoration:
+                BoxDecoration(shape: BoxShape.circle, color: Color(0xFF4A90E2)),
             child: Text(
               widget.destination.hostName[0],
-              style: const TextStyle(
-                color: Colors.white,
+              style: TextStyle(
+                color: CupertinoColors.white,
                 fontSize: 24,
                 fontWeight: FontWeight.w600,
               ),
             ),
           ),
-          const SizedBox(width: 16),
+          SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'Hosted by',
                   style: TextStyle(
-                    color: Colors.white60,
+                    color: CupertinoColors.white.withValues(alpha: 0.60),
                     fontSize: 12,
                   ),
                 ),
                 Text(
                   widget.destination.hostName,
-                  style: const TextStyle(
-                    color: Colors.white,
+                  style: TextStyle(
+                    color: CupertinoColors.white,
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
                   ),
@@ -637,7 +645,7 @@ class _DetailPageState extends State<DetailPage>
             ),
           ),
           GlassButton(
-            icon: Icon(Icons.chat_bubble_outline),
+            icon: Icon(CupertinoIcons.chat_bubble),
             label: 'Contact',
             height: 40,
             width: 40,
@@ -653,22 +661,22 @@ class _DetailPageState extends State<DetailPage>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Location',
           style: TextStyle(
-            color: Colors.white,
+            color: CupertinoColors.white,
             fontSize: 20,
             fontWeight: FontWeight.w700,
           ),
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: 12),
         Container(
           height: 200,
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.05),
+            color: CupertinoColors.white.withValues(alpha: 0.05),
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: Colors.white.withValues(alpha: 0.1),
+              color: CupertinoColors.white.withValues(alpha: 0.1),
             ),
           ),
           child: Center(
@@ -676,15 +684,15 @@ class _DetailPageState extends State<DetailPage>
               mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(
-                  Icons.map_outlined,
-                  color: Colors.white.withValues(alpha: 0.3),
+                  CupertinoIcons.map,
+                  color: CupertinoColors.white.withValues(alpha: 0.3),
                   size: 48,
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: 8),
                 Text(
                   'Map view coming soon',
                   style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.5),
+                    color: CupertinoColors.white.withValues(alpha: 0.5),
                     fontSize: 14,
                   ),
                 ),
@@ -697,92 +705,83 @@ class _DetailPageState extends State<DetailPage>
   }
 
   void _showBookingDialog() {
-    showDialog(
+    GlassDialog.show(
       context: context,
-      barrierColor: Colors.black.withValues(alpha: 0.7),
-      builder: (context) => GlassDialog(
-        title: 'Confirm Booking',
-        settings: ShowcaseGlassTheme.dialog,
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              widget.destination.name,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-              ),
+      barrierColor: CupertinoColors.black.withValues(alpha: 0.7),
+      title: 'Confirm Booking',
+      settings: ShowcaseGlassTheme.dialog,
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            widget.destination.name,
+            style: TextStyle(
+              color: CupertinoColors.white,
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
             ),
-            const SizedBox(height: 8),
-            Text(
-              widget.destination.location,
-              style: const TextStyle(
-                color: Colors.white70,
-                fontSize: 14,
-              ),
-            ),
-            const SizedBox(height: 16),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'Total per night',
-                    style: TextStyle(
-                      color: Colors.white70,
-                      fontSize: 14,
-                    ),
-                  ),
-                  Text(
-                    '\$${widget.destination.pricePerNight.toStringAsFixed(0)}',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              'You will receive a confirmation email once your booking is confirmed.',
-              style: TextStyle(
-                color: Colors.white60,
-                fontSize: 13,
-                height: 1.4,
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          GlassDialogAction(
-            label: 'Cancel',
-            onPressed: () => Navigator.pop(context),
           ),
-          GlassDialogAction(
-            label: 'Confirm',
-            isPrimary: true,
-            onPressed: () {
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Booking confirmed!'),
-                  backgroundColor: Color(0xFF4A90E2),
-                  behavior: SnackBarBehavior.floating,
+          SizedBox(height: 8),
+          Text(
+            widget.destination.location,
+            style: TextStyle(
+              color: CupertinoColors.white.withValues(alpha: 0.70),
+              fontSize: 14,
+            ),
+          ),
+          SizedBox(height: 16),
+          Container(
+            padding: EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: CupertinoColors.white.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Total per night',
+                  style: TextStyle(
+                    color: CupertinoColors.white.withValues(alpha: 0.70),
+                    fontSize: 14,
+                  ),
                 ),
-              );
-            },
+                Text(
+                  '\$${widget.destination.pricePerNight.toStringAsFixed(0)}',
+                  style: TextStyle(
+                    color: CupertinoColors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          SizedBox(height: 16),
+          Text(
+            'You will receive a confirmation email once your booking is confirmed.',
+            style: TextStyle(
+              color: CupertinoColors.white.withValues(alpha: 0.60),
+              fontSize: 13,
+              height: 1.4,
+            ),
           ),
         ],
       ),
+      actions: [
+        GlassDialogAction(
+          label: 'Cancel',
+          onPressed: () => Navigator.pop(context),
+        ),
+        GlassDialogAction(
+          label: 'Confirm',
+          isPrimary: true,
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
+      ],
     );
   }
 }

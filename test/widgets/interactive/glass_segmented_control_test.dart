@@ -1,6 +1,9 @@
+// ignore: unnecessary_import
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
+import 'package:liquid_glass_widgets/widgets/shared/glass_effect.dart';
 
 import '../../shared/test_helpers.dart';
 
@@ -147,7 +150,7 @@ void main() {
       );
 
       expect(control.height, equals(32));
-      expect(control.borderRadius, equals(16));
+      expect(control.borderRadius, equals(GlassDefaults.capsuleRadius));
       expect(control.useOwnLayer, isFalse);
       expect(control.quality, isNull);
     });
@@ -266,6 +269,37 @@ void main() {
       // lastSelected may or may not have changed depending on exact position;
       // the widget should at minimum not crash
       expect(find.byType(GlassSegmentedControl), findsOneWidget);
+    });
+
+    testWidgets('RTL drag right selects left logical segment', (tester) async {
+      int selected = 2; // Start at logical right (physical left in RTL)
+      await tester.pumpWidget(
+        createTestApp(
+          child: Directionality(
+            textDirection: TextDirection.rtl,
+            child: SizedBox(
+              width: 300,
+              child: GlassSegmentedControl(
+                segments: [
+                  GlassSegment(label: 'P'), // logical left, physical right
+                  GlassSegment(label: 'Q'), // logical center, physical center
+                  GlassSegment(label: 'R'), // logical right, physical left
+                ],
+                selectedIndex: selected,
+                onSegmentSelected: (i) => selected = i,
+              ),
+            ),
+          ),
+        ),
+      );
+
+      // Start drag at center and fling to the right
+      final center = tester.getCenter(find.byType(GlassSegmentedControl));
+      await tester.flingFrom(center, const Offset(100, 0), 1000);
+      await tester.pumpAndSettle();
+
+      // Should have selected index 0 or 1 (logical left/center), definitely not 2.
+      expect(selected, lessThan(2));
     });
 
     testWidgets('drag cancel snaps back without crash', (tester) async {
@@ -558,6 +592,214 @@ void main() {
                 onSegmentSelected: (_) {},
               ),
             ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.byType(GlassSegmentedControl), findsOneWidget);
+    });
+  });
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // Indicator Radius Tiers
+  // ──────────────────────────────────────────────────────────────────────────
+
+  group('GlassSegmentedControl 3-Tier Indicator Radius', () {
+    testWidgets('Tier 1: capsule sentinel passes directly to indicator',
+        (tester) async {
+      await tester.pumpWidget(
+        createTestApp(
+          child: GlassSegmentedControl(
+            segments: [GlassSegment(label: 'A'), GlassSegment(label: 'B')],
+            selectedIndex: 0,
+            onSegmentSelected: (_) {},
+            // Implicitly barBorderRadius is GlassDefaults.capsuleRadius
+          ),
+        ),
+      );
+
+      final indicator = tester.widget<AnimatedGlassIndicator>(
+          find.byType(AnimatedGlassIndicator).first);
+      expect(indicator.borderRadius, equals(GlassDefaults.capsuleRadius));
+    });
+
+    testWidgets('Tier 2: custom finite radius applies padding inset',
+        (tester) async {
+      await tester.pumpWidget(
+        createTestApp(
+          child: GlassSegmentedControl(
+            segments: [GlassSegment(label: 'A'), GlassSegment(label: 'B')],
+            selectedIndex: 0,
+            onSegmentSelected: (_) {},
+            borderRadius: 16.0,
+          ),
+        ),
+      );
+
+      final indicator = tester.widget<AnimatedGlassIndicator>(
+          find.byType(AnimatedGlassIndicator).first);
+      // Outer 16.0 minus 2.0 padding = 14.0
+      expect(indicator.borderRadius, equals(14.0));
+    });
+
+    testWidgets('Tier 3: explicit indicatorBorderRadius overrides everything',
+        (tester) async {
+      await tester.pumpWidget(
+        createTestApp(
+          child: GlassSegmentedControl(
+            segments: [GlassSegment(label: 'A'), GlassSegment(label: 'B')],
+            selectedIndex: 0,
+            onSegmentSelected: (_) {},
+            borderRadius: GlassDefaults.capsuleRadius,
+            indicatorBorderRadius: 8.0,
+          ),
+        ),
+      );
+
+      final indicator = tester.widget<AnimatedGlassIndicator>(
+          find.byType(AnimatedGlassIndicator).first);
+      expect(indicator.borderRadius, equals(8.0));
+    });
+  });
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // Accessibility & Focus
+  // ──────────────────────────────────────────────────────────────────────────
+
+  group('GlassSegmentedControl keyboard focus & accessibility', () {
+    testWidgets('exposes semantics for segments', (tester) async {
+      final handle = tester.ensureSemantics();
+      try {
+        await tester.pumpWidget(
+          createTestApp(
+            child: GlassSegmentedControl(
+              segments: [
+                GlassSegment(label: 'Semantics A'),
+                GlassSegment(label: 'Semantics B'),
+              ],
+              selectedIndex: 0,
+              onSegmentSelected: (_) {},
+            ),
+          ),
+        );
+
+        final nodeA = tester.getSemantics(
+          find.bySemanticsLabel('Semantics A').first,
+        );
+        // ignore: deprecated_member_use
+        expect(nodeA.hasFlag(SemanticsFlag.isButton), true);
+        // ignore: deprecated_member_use
+        expect(nodeA.hasFlag(SemanticsFlag.isSelected), true);
+        // ignore: deprecated_member_use
+        expect(nodeA.hasFlag(SemanticsFlag.hasSelectedState), true);
+
+        final nodeB = tester.getSemantics(
+          find.bySemanticsLabel('Semantics B').first,
+        );
+        // ignore: deprecated_member_use
+        expect(nodeB.hasFlag(SemanticsFlag.isButton), true);
+        // ignore: deprecated_member_use
+        expect(nodeB.hasFlag(SemanticsFlag.isSelected), false);
+        // ignore: deprecated_member_use
+        expect(nodeB.hasFlag(SemanticsFlag.hasSelectedState), true);
+      } finally {
+        handle.dispose();
+      }
+    });
+
+    group('indicatorSettings blur neutralisation', () {
+      testWidgets(
+          'premium quality: indicatorSettings with blur > 0 resolves to effectiveBlur == 0 on indicator',
+          (tester) async {
+        await tester.pumpWidget(
+          createTestApp(
+            child: GlassSegmentedControl(
+              segments: const [
+                GlassSegment(label: 'Day'),
+                GlassSegment(label: 'Week'),
+              ],
+              selectedIndex: 0,
+              onSegmentSelected: (_) {},
+              quality: GlassQuality.premium,
+              indicatorSettings: const LiquidGlassSettings(blur: 20),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        // Press down to trigger active indicator lens bloom (thickness > 0.01)
+        final gesture =
+            await tester.startGesture(tester.getCenter(find.text('Day')));
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 100));
+
+        final indicatorGlass = tester.widget<GlassEffect>(
+          find.byType(GlassEffect).first,
+        );
+        expect(
+          indicatorGlass.settings.effectiveBlur,
+          0.0,
+          reason: 'Premium indicator lens must never apply BackdropFilter blur',
+        );
+
+        await gesture.up();
+        await tester.pumpAndSettle();
+      });
+
+      testWidgets(
+          'standard quality: indicatorSettings with blur > 0 resolves to effectiveBlur == 0 on indicator',
+          (tester) async {
+        await tester.pumpWidget(
+          createTestApp(
+            child: GlassSegmentedControl(
+              segments: const [
+                GlassSegment(label: 'Day'),
+                GlassSegment(label: 'Week'),
+              ],
+              selectedIndex: 0,
+              onSegmentSelected: (_) {},
+              quality: GlassQuality.standard,
+              indicatorSettings: const LiquidGlassSettings(blur: 15),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        // Press down to trigger active indicator lens bloom (thickness > 0.01)
+        final gesture =
+            await tester.startGesture(tester.getCenter(find.text('Day')));
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 100));
+
+        final indicatorGlass = tester.widget<GlassEffect>(
+          find.byType(GlassEffect).first,
+        );
+        expect(
+          indicatorGlass.settings.effectiveBlur,
+          0.0,
+          reason:
+              'Standard indicator lens must never apply BackdropFilter blur',
+        );
+
+        await gesture.up();
+        await tester.pumpAndSettle();
+      });
+    });
+
+    testWidgets(
+        'GlassSegmentedControl.scrollable with infinite borderRadius renders without collapsing',
+        (tester) async {
+      await tester.pumpWidget(
+        createTestApp(
+          child: GlassSegmentedControl.scrollable(
+            segments: const [
+              GlassSegment(label: 'Day'),
+              GlassSegment(label: 'Week'),
+              GlassSegment(label: 'Month'),
+            ],
+            selectedIndex: 0,
+            onSegmentSelected: (_) {},
+            borderRadius: double.infinity,
           ),
         ),
       );

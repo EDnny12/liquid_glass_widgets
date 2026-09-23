@@ -2,7 +2,7 @@ import 'dart:ui' show lerpDouble;
 
 import 'package:flutter/widgets.dart';
 
-import '../src/renderer/liquid_glass_settings.dart';
+import '../src/engine/liquid_glass_settings.dart';
 import '../types/glass_specular_sharpness.dart';
 
 /// A partial override of [LiquidGlassSettings] for use in [GlassThemeVariant].
@@ -53,9 +53,11 @@ class GlassThemeSettings {
     this.lightAngle,
     this.lightIntensity,
     this.ambientStrength,
+    this.fresnelStrength,
     this.refractiveIndex,
     this.saturation,
     this.specularSharpness,
+    this.edgeAbsorption,
   });
 
   /// See [LiquidGlassSettings.visibility].
@@ -82,6 +84,9 @@ class GlassThemeSettings {
   /// See [LiquidGlassSettings.ambientStrength].
   final double? ambientStrength;
 
+  /// See [LiquidGlassSettings.fresnelStrength].
+  final double? fresnelStrength;
+
   /// See [LiquidGlassSettings.refractiveIndex].
   final double? refractiveIndex;
 
@@ -90,6 +95,9 @@ class GlassThemeSettings {
 
   /// See [LiquidGlassSettings.specularSharpness].
   final GlassSpecularSharpness? specularSharpness;
+
+  /// See [LiquidGlassSettings.edgeAbsorption].
+  final double? edgeAbsorption;
 
   /// Returns a new [LiquidGlassSettings] by applying this override onto [base].
   ///
@@ -105,9 +113,20 @@ class GlassThemeSettings {
       lightAngle: lightAngle ?? base.lightAngle,
       lightIntensity: lightIntensity ?? base.lightIntensity,
       ambientStrength: ambientStrength ?? base.ambientStrength,
+      ambientRim: base.ambientRim,
+      fresnelStrength: fresnelStrength ?? base.fresnelStrength,
       refractiveIndex: refractiveIndex ?? base.refractiveIndex,
       saturation: saturation ?? base.saturation,
+      glowIntensity: base.glowIntensity,
       specularSharpness: specularSharpness ?? base.specularSharpness,
+      standardOpacityMultiplier: base.standardOpacityMultiplier,
+      shadowElevation: base.shadowElevation,
+      shadow: base.shadow,
+      whitenStrength: base.whitenStrength,
+      whitenGated: base.whitenGated,
+      edgeAbsorption: edgeAbsorption ?? base.edgeAbsorption,
+      backerColor: base.backerColor,
+      platformViewFallbackColor: base.platformViewFallbackColor,
     );
   }
 
@@ -146,10 +165,13 @@ class GlassThemeSettings {
       lightIntensity: _lerpDoubleField(a.lightIntensity, b.lightIntensity, t),
       ambientStrength:
           _lerpDoubleField(a.ambientStrength, b.ambientStrength, t),
+      fresnelStrength:
+          _lerpDoubleField(a.fresnelStrength, b.fresnelStrength, t),
       refractiveIndex:
           _lerpDoubleField(a.refractiveIndex, b.refractiveIndex, t),
       saturation: _lerpDoubleField(a.saturation, b.saturation, t),
       specularSharpness: t < 0.5 ? a.specularSharpness : b.specularSharpness,
+      edgeAbsorption: _lerpDoubleField(a.edgeAbsorption, b.edgeAbsorption, t),
     );
   }
 
@@ -173,9 +195,11 @@ class GlassThemeSettings {
     double? lightAngle,
     double? lightIntensity,
     double? ambientStrength,
+    double? fresnelStrength,
     double? refractiveIndex,
     double? saturation,
     GlassSpecularSharpness? specularSharpness,
+    double? edgeAbsorption,
   }) {
     return GlassThemeSettings(
       visibility: visibility ?? this.visibility,
@@ -186,9 +210,11 @@ class GlassThemeSettings {
       lightAngle: lightAngle ?? this.lightAngle,
       lightIntensity: lightIntensity ?? this.lightIntensity,
       ambientStrength: ambientStrength ?? this.ambientStrength,
+      fresnelStrength: fresnelStrength ?? this.fresnelStrength,
       refractiveIndex: refractiveIndex ?? this.refractiveIndex,
       saturation: saturation ?? this.saturation,
       specularSharpness: specularSharpness ?? this.specularSharpness,
+      edgeAbsorption: edgeAbsorption ?? this.edgeAbsorption,
     );
   }
 
@@ -205,9 +231,11 @@ class GlassThemeSettings {
           lightAngle == other.lightAngle &&
           lightIntensity == other.lightIntensity &&
           ambientStrength == other.ambientStrength &&
+          fresnelStrength == other.fresnelStrength &&
           refractiveIndex == other.refractiveIndex &&
           saturation == other.saturation &&
-          specularSharpness == other.specularSharpness;
+          specularSharpness == other.specularSharpness &&
+          edgeAbsorption == other.edgeAbsorption;
 
   @override
   int get hashCode => Object.hash(
@@ -219,9 +247,11 @@ class GlassThemeSettings {
         lightAngle,
         lightIntensity,
         ambientStrength,
+        fresnelStrength,
         refractiveIndex,
         saturation,
         specularSharpness,
+        edgeAbsorption,
       );
 
   @override
@@ -229,6 +259,7 @@ class GlassThemeSettings {
       'visibility: $visibility, '
       'thickness: $thickness, '
       'blur: $blur, '
-      'glassColor: $glassColor'
+      'glassColor: $glassColor, '
+      'edgeAbsorption: $edgeAbsorption'
       ')';
 }

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import 'pages/home_page.dart';
@@ -19,7 +19,8 @@ void main() async {
     const SystemUiOverlayStyle(
       statusBarBrightness: Brightness.dark,
       statusBarIconBrightness: Brightness.light,
-      systemNavigationBarColor: Colors.transparent,
+      systemNavigationBarColor:
+          Color(0x00000000), // Color(0x00000000) equivalent
       systemNavigationBarIconBrightness: Brightness.light,
     ),
   );
@@ -32,19 +33,17 @@ class WanderlustApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return const CupertinoApp(
       title: 'Wanderlust',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        useMaterial3: true,
+      theme: CupertinoThemeData(
         brightness: Brightness.dark,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF4A90E2),
-          brightness: Brightness.dark,
-        ),
-        fontFamily: 'SF Pro Display', // Falls back to system font
+        primaryColor: Color(0xFF4A90E2),
+        // textTheme: CupertinoTextThemeData(
+        //   textStyle: TextStyle(fontFamily: 'SF Pro Display'),
+        // ),
       ),
-      home: const HomePage(),
+      home: HomePage(),
     );
   }
 }

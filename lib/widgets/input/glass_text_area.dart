@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import '../../src/renderer/liquid_glass_renderer.dart';
 import '../../src/types/glass_interaction_behavior.dart';
@@ -38,7 +38,7 @@ class GlassTextArea extends StatelessWidget {
     this.settings,
     this.useOwnLayer = false,
     this.quality,
-    this.shape = const LiquidRoundedSuperellipse(borderRadius: 10),
+    this.shape = const LiquidRoundedRectangle(borderRadius: 10),
     // ── iOS 26 interaction ────────────────────────────────────────────────────────────
     this.interactionBehavior = GlassInteractionBehavior.full,
     this.pressScale = 1.03,

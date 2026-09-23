@@ -1,5 +1,4 @@
-import 'package:flutter/cupertino.dart' show CupertinoColors;
-import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import '../../src/renderer/liquid_glass_renderer.dart';
 
 import '../../types/glass_quality.dart';
@@ -103,8 +102,11 @@ class GlassIconButton extends StatelessWidget {
     this.quality,
     this.persistPressOnDrag = true,
     this.anchorStretch = true,
-    this.anchorStretchSettings = const AnchorStretchSettings(),
+    this.anchorStretchSettings,
     this.platformViewBackdrop = false,
+    this.focusNode,
+    this.autofocus = false,
+    this.semanticLabel,
   });
 
   // Default icon colors are resolved at build time from CupertinoColors.label
@@ -216,13 +218,24 @@ class GlassIconButton extends StatelessWidget {
 
   /// Fine-tuning for the anchor stretch effect.
   ///
-  /// See [AnchorStretchSettings] for details.
-  final AnchorStretchSettings anchorStretchSettings;
+  /// Defaults to `null`. See [GlassButton.anchorStretchSettings].
+  final AnchorStretchSettings? anchorStretchSettings;
 
   /// When true (typically for iOS PlatformViews), forces the BackdropFilter
   /// fallback render path instead of the Impeller-native shader. Forwarded to
   /// the underlying [GlassButton] (and on to its [AdaptiveGlass]).
   final bool platformViewBackdrop;
+
+  /// Externally provided focus node.
+  final FocusNode? focusNode;
+
+  /// Whether to request focus immediately.
+  final bool autofocus;
+
+  /// The semantic label for screen readers.
+  ///
+  /// Critical for icon buttons which otherwise have no textual content.
+  final String? semanticLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -260,6 +273,9 @@ class GlassIconButton extends StatelessWidget {
       anchorStretch: anchorStretch,
       anchorStretchSettings: anchorStretchSettings,
       platformViewBackdrop: platformViewBackdrop,
+      focusNode: focusNode,
+      autofocus: autofocus,
+      label: semanticLabel ?? '',
       child: iconWidget,
     );
   }
@@ -271,7 +287,7 @@ class GlassIconButton extends StatelessWidget {
       case GlassIconButtonShape.circle:
         return _defaultOval;
       case GlassIconButtonShape.roundedSquare:
-        return LiquidRoundedSuperellipse(
+        return LiquidRoundedRectangle(
           borderRadius: borderRadius,
         );
     }

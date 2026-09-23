@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+
 import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import 'package:liquid_glass_widgets_example/constants/glass_settings.dart';
 
@@ -44,7 +45,7 @@ class _StretchDemoPageState extends State<StretchTestDemo> {
       settings: RecommendedGlassSettings.standard,
       statusBarStyle: GlassStatusBarStyle.light,
       background: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -56,19 +57,8 @@ class _StretchDemoPageState extends State<StretchTestDemo> {
           ),
         ),
       ),
-      child: Scaffold(
-        extendBodyBehindAppBar: true,
-        appBar: GlassAppBar(
-          leading: GlassButton(
-            quality: GlassQuality.premium,
-            icon: const Icon(CupertinoIcons.back),
-            onTap: () => Navigator.of(context).pop(),
-            width: 40,
-            height: 40,
-            iconSize: 20,
-            useOwnLayer: true,
-          ),
-        ),
+      child: GlassScaffold(
+        appBar: const GlassAppBar.pinned(),
         body: GlassScrollEdgeEffect(
           topFadeHeight: MediaQuery.paddingOf(context).top + 44 + 40,
           fadeBottom: false,
@@ -91,67 +81,67 @@ class _StretchDemoPageState extends State<StretchTestDemo> {
                           style: TextStyle(
                               fontSize: 28,
                               fontWeight: FontWeight.w700,
-                              color: Colors.white)),
+                              color: CupertinoColors.white)),
                       SizedBox(height: 12),
                       Text(
                           'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
-                          style:
-                              TextStyle(fontSize: 15, color: Colors.white70)),
+                          style: TextStyle(
+                              fontSize: 15, color: Color(0xB2FFFFFF))),
                       SizedBox(height: 24),
                       Text('Section 2',
                           style: TextStyle(
                               fontSize: 28,
                               fontWeight: FontWeight.w700,
-                              color: Colors.white)),
+                              color: CupertinoColors.white)),
                       SizedBox(height: 12),
                       Text(
                           'Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.',
-                          style:
-                              TextStyle(fontSize: 15, color: Colors.white70)),
+                          style: TextStyle(
+                              fontSize: 15, color: Color(0xB2FFFFFF))),
                       SizedBox(height: 24),
                       Text('Section 3',
                           style: TextStyle(
                               fontSize: 28,
                               fontWeight: FontWeight.w700,
-                              color: Colors.white)),
+                              color: CupertinoColors.white)),
                       SizedBox(height: 12),
                       Text(
                           'Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.',
-                          style:
-                              TextStyle(fontSize: 15, color: Colors.white70)),
+                          style: TextStyle(
+                              fontSize: 15, color: Color(0xB2FFFFFF))),
                       SizedBox(height: 24),
                       Text('Section 4',
                           style: TextStyle(
                               fontSize: 28,
                               fontWeight: FontWeight.w700,
-                              color: Colors.white)),
+                              color: CupertinoColors.white)),
                       SizedBox(height: 12),
                       Text(
                           'Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
-                          style:
-                              TextStyle(fontSize: 15, color: Colors.white70)),
+                          style: TextStyle(
+                              fontSize: 15, color: Color(0xB2FFFFFF))),
                       SizedBox(height: 24),
                       Text('Section 5',
                           style: TextStyle(
                               fontSize: 28,
                               fontWeight: FontWeight.w700,
-                              color: Colors.white)),
+                              color: CupertinoColors.white)),
                       SizedBox(height: 12),
                       Text(
                           'Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium.',
-                          style:
-                              TextStyle(fontSize: 15, color: Colors.white70)),
+                          style: TextStyle(
+                              fontSize: 15, color: Color(0xB2FFFFFF))),
                       SizedBox(height: 24),
                       Text('Section 6',
                           style: TextStyle(
                               fontSize: 28,
                               fontWeight: FontWeight.w700,
-                              color: Colors.white)),
+                              color: CupertinoColors.white)),
                       SizedBox(height: 12),
                       Text(
                           'Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores.',
-                          style:
-                              TextStyle(fontSize: 15, color: Colors.white70)),
+                          style: TextStyle(
+                              fontSize: 15, color: Color(0xB2FFFFFF))),
                       SizedBox(height: 32),
                     ],
                   ),
@@ -159,7 +149,7 @@ class _StretchDemoPageState extends State<StretchTestDemo> {
               ),
               SliverToBoxAdapter(
                   child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
+                padding: EdgeInsets.symmetric(horizontal: 24),
                 child: AdaptiveLiquidGlassLayer(
                   child: Column(children: [
                     Row(
@@ -168,14 +158,14 @@ class _StretchDemoPageState extends State<StretchTestDemo> {
 
                         GlassButton(
                           quality: GlassQuality.premium,
-                          icon: const Icon(CupertinoIcons.chevron_left),
+                          icon: Icon(CupertinoIcons.chevron_left),
                           onTap: () {},
                           width: 56,
                           height: 56,
                           iconSize: 22,
                           //  useOwnLayer: true,
                         ),
-                        const SizedBox(width: 12),
+                        SizedBox(width: 12),
                         // Wide pill button — text only
                         Expanded(
                           child: GlassButton(
@@ -186,15 +176,15 @@ class _StretchDemoPageState extends State<StretchTestDemo> {
                             height: 56,
                             iconSize: 0,
                             //  useOwnLayer: true,
-                            shape: const LiquidRoundedSuperellipse(
-                                borderRadius: 32),
+                            shape:
+                                const LiquidRoundedRectangle(borderRadius: 32),
                           ),
                         ),
-                        const SizedBox(width: 12),
+                        SizedBox(width: 12),
                         // Right square button — options
                         GlassButton(
                           quality: GlassQuality.premium,
-                          icon: const Icon(CupertinoIcons.ellipsis),
+                          icon: Icon(CupertinoIcons.ellipsis),
                           onTap: () {},
                           width: 56,
                           height: 56,
@@ -209,10 +199,10 @@ class _StretchDemoPageState extends State<StretchTestDemo> {
                         Expanded(
                           child: Text(
                             'Test Premium toggle scroll',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
-                              color: Colors.white,
+                              color: CupertinoColors.white,
                             ),
                           ),
                         ),

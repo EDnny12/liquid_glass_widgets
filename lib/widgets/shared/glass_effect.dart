@@ -3,7 +3,7 @@
 import 'dart:math' as math;
 import 'dart:ui' as ui;
 
-import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/rendering.dart';
 import '../../src/renderer/liquid_glass_renderer.dart';
 
@@ -25,6 +25,7 @@ import 'adaptive_glass.dart';
 /// On Skia/Web or standard quality, it uses the enhanced GlassEffect
 /// shader with magnification and structural rim effects.
 class GlassEffect extends StatefulWidget {
+  /// Creates a new [GlassEffect].
   const GlassEffect({
     required this.shape,
     required this.settings,
@@ -42,9 +43,16 @@ class GlassEffect extends StatefulWidget {
     super.key,
   });
 
+  /// The child widget to display.
   final Widget child;
+
+  /// The shape of the glass effect.
   final LiquidShape shape;
+
+  /// The settings for the liquid glass effect.
   final LiquidGlassSettings settings;
+
+  /// The render quality of the glass.
   final GlassQuality quality;
 
   /// Defaults to 0.0.
@@ -87,8 +95,33 @@ class GlassEffect extends StatefulWidget {
   /// Detects if Impeller rendering engine is active
   static bool get _canUseImpeller => ui.ImageFilter.isShaderFilterSupported;
 
+  // Dummy 1x1 transparent image for when no background is captured.
+  // Lazily allocated on first paint to guarantee zero GPU raster work
+  // during preWarm() or initialize() before runApp().
   static ui.Image? _dummyImage;
 
+  /// Returns the cached 1×1 transparent dummy image, creating it lazily on demand.
+  static ui.Image get dummyImage => _dummyImage ??= _createDummyImage();
+
+  static ui.Image _createDummyImage() {
+    final recorder = ui.PictureRecorder();
+    Canvas(recorder);
+    final picture = recorder.endRecording();
+    final image = picture.toImageSync(1, 1);
+    picture.dispose();
+    return image;
+  }
+
+  /// Resets static shader state for testing.
+  @visibleForTesting
+  static void resetForTesting() {
+    _cachedProgram = null;
+    _isPreparing = false;
+    _dummyImage?.dispose();
+    _dummyImage = null;
+  }
+
+  /// Pre-warms the shaders for this effect.
   static Future<void> preWarm() async {
     if (_cachedProgram != null || _isPreparing) return;
     _isPreparing = true;
@@ -105,16 +138,6 @@ class GlassEffect extends StatefulWidget {
         program = await ui.FragmentProgram.fromAsset(testPath);
       }
       _cachedProgram = program;
-
-      // Create a 1x1 transparent dummy image to satisfy sampler index 0.
-      // toImageSync (not toImage) — synchronous, consistent with
-      // LightweightLiquidGlass.preWarm(). For a 1×1 image the GPU cost
-      // is negligible and we avoid a 1-frame async initialization delay.
-      final recorder = ui.PictureRecorder();
-      Canvas(recorder);
-      final picture = recorder.endRecording();
-      _dummyImage = picture.toImageSync(1, 1);
-      picture.dispose();
     } catch (e) {
       debugPrint('[GlassEffect] Pre-warm failed: $e');
     } finally {
@@ -289,7 +312,7 @@ class _GlassEffectState extends State<GlassEffect>
       if (boundary.size.isEmpty) {
         debugPrint(
           '⚠️ [GlassEffect] Background boundary has zero size.\n'
-          '   Ensure GlassRefractionSource (or LiquidGlassScope.stack) wraps\n'
+          '   Ensure GlassBackgroundSource (or GlassPage) wraps\n'
           '   a widget with non-zero dimensions.',
         );
       }
@@ -405,12 +428,7 @@ class _GlassEffectState extends State<GlassEffect>
     super.dispose();
   }
 
-  ui.FragmentShader? get _activeShader {
-    // We only return the shader if the dummy image is ready,
-    // to prevent "missing sampler" build errors.
-    if (GlassEffect._dummyImage == null) return null;
-    return _localShader;
-  }
+  ui.FragmentShader? get _activeShader => _localShader;
 
   @override
   Widget build(BuildContext context) {
@@ -441,7 +459,7 @@ class _GlassEffectState extends State<GlassEffect>
     // used in the full-shader path. _FrostedFallback has no displacement, so
     // Clip.none would skip clipping entirely and let BackdropFilter blur the
     // full rectangular bounds (the grey-square artifact).
-    if (widget.quality == GlassQuality.minimal || avoidsRefraction) {
+    if (widget.quality == GlassQuality.minimal) {
       return AdaptiveGlass(
         shape: widget.shape,
         settings: widget.settings,
@@ -449,6 +467,25 @@ class _GlassEffectState extends State<GlassEffect>
         useOwnLayer: true,
         clipBehavior: Clip.antiAlias,
         isInteractive: true,
+        child: widget.child,
+      );
+    }
+
+    // Path A2: Nested glass vibrancy fill (avoidsRefraction: true)
+    //
+    // Triggered when an ancestor GlassContainer (or any widget that sets
+    // InheritedLiquidGlass.avoidsRefraction = true) is in the tree. A second
+    // BackdropFilter inside the parent glass surface causes Impeller GPU tile-
+    // memory thrash, missing surfaces, and visible compositor artifacts.
+    //
+    // The correct iOS 26 behaviour for nested glass is a UIVibrancyEffect-style
+    // translucent tinted fill: no refraction, no blur, but rim and specular
+    // highlights are preserved. _VibrancyFill delivers exactly this — zero GPU
+    // compositor overhead, correct on all renderers including Skia and Web.
+    if (avoidsRefraction) {
+      return AdaptiveGlass.vibrancy(
+        shape: widget.shape,
+        settings: widget.settings,
         child: widget.child,
       );
     }
@@ -560,6 +597,7 @@ class _GlassEffectState extends State<GlassEffect>
         edgeAlphaMultiplier: effectiveEdgeAlpha,
         rimThickness: effectiveRimThickness,
         rimSmoothing: widget.rimSmoothing,
+        edgeAbsorption: effectiveSettings.edgeAbsorption,
         clipExpansion: widget.clipExpansion,
         child: widget.child,
       );
@@ -586,6 +624,7 @@ class _GlassEffectState extends State<GlassEffect>
         edgeAlphaMultiplier: effectiveEdgeAlpha,
         rimThickness: effectiveRimThickness,
         rimSmoothing: widget.rimSmoothing,
+        edgeAbsorption: effectiveSettings.edgeAbsorption,
         clipExpansion: widget.clipExpansion,
         child: widget.child,
       );
@@ -612,6 +651,7 @@ class _InteractiveIndicatorEffect extends SingleChildRenderObjectWidget {
     required this.edgeAlphaMultiplier,
     required this.rimThickness,
     required this.rimSmoothing,
+    required this.edgeAbsorption,
     this.clipExpansion = EdgeInsets.zero,
     required super.child,
   });
@@ -630,6 +670,7 @@ class _InteractiveIndicatorEffect extends SingleChildRenderObjectWidget {
   final double edgeAlphaMultiplier;
   final double rimThickness;
   final double rimSmoothing;
+  final double edgeAbsorption;
 
   /// Inflation budget matching the parent [AnimatedGlassIndicator._jellyClipExpansion].
   /// The shader drawRect is inflated by this amount so that pixels pushed
@@ -654,6 +695,7 @@ class _InteractiveIndicatorEffect extends SingleChildRenderObjectWidget {
       edgeAlphaMultiplier: edgeAlphaMultiplier,
       rimThickness: rimThickness,
       rimSmoothing: rimSmoothing,
+      edgeAbsorption: edgeAbsorption,
       clipExpansion: clipExpansion,
     );
   }
@@ -678,6 +720,7 @@ class _InteractiveIndicatorEffect extends SingleChildRenderObjectWidget {
       ..edgeAlphaMultiplier = edgeAlphaMultiplier
       ..rimThickness = rimThickness
       ..rimSmoothing = rimSmoothing
+      ..edgeAbsorption = edgeAbsorption
       ..clipExpansion = clipExpansion;
   }
 }
@@ -698,6 +741,7 @@ class _RenderInteractiveIndicator extends RenderProxyBox {
     required double edgeAlphaMultiplier,
     required double rimThickness,
     required double rimSmoothing,
+    required double edgeAbsorption,
     EdgeInsets clipExpansion = EdgeInsets.zero,
   })  : _shader = shader,
         _settings = settings,
@@ -713,6 +757,7 @@ class _RenderInteractiveIndicator extends RenderProxyBox {
         _edgeAlphaMultiplier = edgeAlphaMultiplier,
         _rimThickness = rimThickness,
         _rimSmoothing = rimSmoothing,
+        _edgeAbsorption = edgeAbsorption,
         _clipExpansion = clipExpansion,
         _cachedLightCos = math.cos(settings.lightAngle),
         _cachedLightSin = -math.sin(settings.lightAngle);
@@ -736,7 +781,14 @@ class _RenderInteractiveIndicator extends RenderProxyBox {
       _cachedLightCos = math.cos(value.lightAngle);
       _cachedLightSin = -math.sin(value.lightAngle);
     }
+    final wasCompositing = alwaysNeedsCompositing;
     _settings = value;
+    // alwaysNeedsCompositing depends on effectiveBlur. Dirty the compositing
+    // bit whenever blur crosses zero so the framework re-evaluates instead of
+    // keeping a stale needsCompositing value.
+    if (wasCompositing != alwaysNeedsCompositing) {
+      markNeedsCompositingBitsUpdate();
+    }
     markNeedsPaint();
   }
 
@@ -821,6 +873,13 @@ class _RenderInteractiveIndicator extends RenderProxyBox {
   set rimSmoothing(double value) {
     if (_rimSmoothing == value) return;
     _rimSmoothing = value;
+    markNeedsPaint();
+  }
+
+  double _edgeAbsorption;
+  set edgeAbsorption(double value) {
+    if (_edgeAbsorption == value) return;
+    _edgeAbsorption = value;
     markNeedsPaint();
   }
 
@@ -913,11 +972,16 @@ class _RenderInteractiveIndicator extends RenderProxyBox {
       // compositor backdrop via a saveLayer, destroying the frosted-glass effect.
       // antiAlias creates a ClipPathLayer with no saveLayer, giving sub-pixel AA
       // on the pill edge without compositor isolation.
-      final pillPath = _shape.getOuterPath(offset & size);
+      //
+      // IMPORTANT: build the path in **local** coordinates (Offset.zero & size).
+      // PaintingContext.pushClipPath calls clipPath.shift(offset) internally, so
+      // passing `offset & size` here would shift the clip twice — placing it
+      // entirely outside the widget's screen bounds whenever offset != zero.
+      final pillPath = _shape.getOuterPath(Offset.zero & size);
       _clipPathLayerHandle.layer = context.pushClipPath(
         needsCompositing,
         offset,
-        offset & size,
+        Offset.zero & size,
         pillPath,
         (context, offset) {
           context.pushLayer(
@@ -989,14 +1053,12 @@ class _RenderInteractiveIndicator extends RenderProxyBox {
         size, physicalOrigin, uScale, bgRelativeOffset, bgSize);
 
     // 3. Set Sampler
-    final imageToBind = _backgroundImage ?? GlassEffect._dummyImage;
-    if (imageToBind != null) {
-      _shader.setImageSampler(
-        0,
-        imageToBind,
-        filterQuality: FilterQuality.medium,
-      );
-    }
+    final imageToBind = _backgroundImage ?? GlassEffect.dummyImage;
+    _shader.setImageSampler(
+      0,
+      imageToBind,
+      filterQuality: FilterQuality.medium,
+    );
 
     // 4. Paint shader overlay — inflate the draw rect by the clip expansion budget.
     //
@@ -1049,42 +1111,11 @@ class _RenderInteractiveIndicator extends RenderProxyBox {
     _shader.setFloat(index++, (_settings.chromaticAberration).clamp(0.0, 1.0));
 
     // 16: uCornerRadius (float) - Logical
-    double? cornerRadius;
-    final dynamic dynShape = _shape;
-    final shapeStr = _shape.runtimeType.toString().toLowerCase();
-
-    // 1. Try dynamic property extraction (Highest Accuracy)
-    try {
-      if (dynShape.borderRadius is num) {
-        cornerRadius = (dynShape.borderRadius as num).toDouble();
-      } else if (dynShape.borderRadius is BorderRadius) {
-        cornerRadius = (dynShape.borderRadius as BorderRadius).topLeft.x;
-      } else if (dynShape.borderRadius is BorderRadiusGeometry) {
-        final resolved = (dynShape.borderRadius as BorderRadiusGeometry)
-            .resolve(TextDirection.ltr);
-        cornerRadius = resolved.topLeft.x;
-      } else if (dynShape.radius is num) {
-        cornerRadius = (dynShape.radius as num).toDouble();
-      } else if (dynShape.radius is Radius) {
-        cornerRadius = (dynShape.radius as Radius).x;
-      }
-    } catch (_) {}
-
-    // 2. Class Name Heuristics (Robustness fallback)
-    // Only apply if the property extraction failed completely
-    if (cornerRadius == null) {
-      if (shapeStr.contains('rounded') || shapeStr.contains('superellipse')) {
-        cornerRadius = 16.0; // Standard pill/card radius
-      } else if (shapeStr.contains('oval') ||
-          shapeStr.contains('circle') ||
-          shapeStr.contains('stadium')) {
-        cornerRadius = math.min(size.width, size.height) / 2.0;
-      } else {
-        cornerRadius = 0.0;
-      }
-    }
+    // effectiveRadius is obfuscation-safe: it is a typed virtual dispatch on
+    // the sealed LiquidShape hierarchy, not a dynamic property lookup or a
+    // runtimeType.toString() heuristic (both of which break under --obfuscate).
     final maxRadius = math.min(size.width, size.height) / 2.0;
-    cornerRadius = cornerRadius.clamp(0.0, maxRadius);
+    final cornerRadius = _shape.effectiveRadius.clamp(0.0, maxRadius);
     _shader.setFloat(index++, cornerRadius);
 
     _shader.setFloat(index++, physicalScale.dx);
@@ -1115,5 +1146,9 @@ class _RenderInteractiveIndicator extends RenderProxyBox {
     // convert logical uBackgroundSize to physical texel dimensions.
     // index 32 (after the 32 floats mapped to uData0..uData7).
     _shader.setFloat(index++, _devicePixelRatio);
+
+    // Slot 33: edgeAbsorption — Beer-Lambert meniscus rim darkening [0..1].
+    // Passed directly — what the caller sets is what the shader gets.
+    _shader.setFloat(index++, _edgeAbsorption.clamp(0.0, 1.0));
   }
 }

@@ -10,6 +10,7 @@ library;
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+
 import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 
 void main() async {
@@ -85,7 +86,7 @@ class _ReproHomeState extends State<_ReproHome> {
       tabPillAnchor: _tabPillAnchor,
     );
 
-    return Scaffold(
+    return GlassScaffold(
       backgroundColor: const Color(0xFF0A0A0F),
       resizeToAvoidBottomInset: false,
       body: Column(
@@ -93,31 +94,31 @@ class _ReproHomeState extends State<_ReproHome> {
           SafeArea(
             bottom: false,
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+              padding: EdgeInsets.fromLTRB(16, 12, 16, 0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const Text(
+                  Text(
                     'SearchableBottomBar Repro',
                     style: TextStyle(
-                        color: Colors.white,
+                        color: CupertinoColors.white,
                         fontSize: 20,
                         fontWeight: FontWeight.w700),
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16),
 
                   // Global Config Toggles
                   _buildToggleRow('showsCancelButton', _showsCancelButton,
                       (v) => setState(() => _showsCancelButton = v)),
 
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8),
                   _buildSegmentedConfig<double>(
                     label: 'searchHeight',
                     value: _searchBarHeight,
                     options: {50.0: '50.0', 64.0: '64.0'},
                     onChanged: (v) => setState(() => _searchBarHeight = v),
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8),
                   _buildSegmentedConfig<GlassTabPillAnchor>(
                     label: 'anchor',
                     value: _tabPillAnchor,
@@ -128,9 +129,9 @@ class _ReproHomeState extends State<_ReproHome> {
                     onChanged: (v) => setState(() => _tabPillAnchor = v),
                   ),
 
-                  const SizedBox(height: 16),
-                  Divider(color: Colors.white.withValues(alpha: 0.1)),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 16),
+                  Divider(color: CupertinoColors.white.withValues(alpha: 0.1)),
+                  SizedBox(height: 8),
 
                   // Scenario Selector
                   Wrap(
@@ -141,8 +142,8 @@ class _ReproHomeState extends State<_ReproHome> {
                       return GestureDetector(
                         onTap: () => setState(() => _scenario = s),
                         child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 7),
+                          padding:
+                              EdgeInsets.symmetric(horizontal: 12, vertical: 7),
                           decoration: BoxDecoration(
                             color: active
                                 ? const Color(0xFF0A84FF)
@@ -153,8 +154,9 @@ class _ReproHomeState extends State<_ReproHome> {
                             s.label,
                             style: TextStyle(
                               color: active
-                                  ? Colors.white
-                                  : Colors.white.withValues(alpha: 0.7),
+                                  ? CupertinoColors.white
+                                  : CupertinoColors.white
+                                      .withValues(alpha: 0.7),
                               fontSize: 12,
                               fontWeight:
                                   active ? FontWeight.w600 : FontWeight.w400,
@@ -168,7 +170,7 @@ class _ReproHomeState extends State<_ReproHome> {
               ),
             ),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
           Expanded(
             child: AnimatedSwitcher(
               duration: const Duration(milliseconds: 250),
@@ -186,13 +188,14 @@ class _ReproHomeState extends State<_ReproHome> {
   Widget _buildToggleRow(
       String label, bool value, ValueChanged<bool> onChanged) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 4),
+      padding: EdgeInsets.only(bottom: 4),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(label,
               style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.8), fontSize: 13)),
+                  color: CupertinoColors.white.withValues(alpha: 0.8),
+                  fontSize: 13)),
           Transform.scale(
             scale: 0.75,
             child: CupertinoSwitch(value: value, onChanged: onChanged),
@@ -213,7 +216,8 @@ class _ReproHomeState extends State<_ReproHome> {
       children: [
         Text(label,
             style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.8), fontSize: 13)),
+                color: CupertinoColors.white.withValues(alpha: 0.8),
+                fontSize: 13)),
         CupertinoSlidingSegmentedControl<T>(
           groupValue: value,
           onValueChanged: (v) {
@@ -223,8 +227,8 @@ class _ReproHomeState extends State<_ReproHome> {
             (k, v) => MapEntry(
               k,
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                child: Text(v, style: const TextStyle(fontSize: 12)),
+                padding: EdgeInsets.symmetric(horizontal: 12),
+                child: Text(v, style: TextStyle(fontSize: 12)),
               ),
             ),
           ),
@@ -254,7 +258,7 @@ class _ReproHomeState extends State<_ReproHome> {
 // ─────────────────────────────────────────────────────────────────────────────
 Widget _buildBackground() {
   return Container(
-    decoration: const BoxDecoration(
+    decoration: BoxDecoration(
       gradient: LinearGradient(
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
@@ -306,26 +310,27 @@ class _ScenarioExtraButtonState extends State<_ScenarioExtraButton> {
             children: [
               Text(
                 _searching ? 'SEARCH ACTIVE' : 'Tab $_selectedIndex',
-                style: const TextStyle(
-                    color: Colors.white,
+                style: TextStyle(
+                    color: CupertinoColors.white,
                     fontSize: 28,
                     fontWeight: FontWeight.w700),
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: 8),
               Text(
                 'extraButton position: $posLabel\n'
                 'Toggle collapseOnSearchFocus below ↓',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.6), height: 1.6),
+                    color: CupertinoColors.white.withValues(alpha: 0.6),
+                    height: 1.6),
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: 12),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text('collapseOnSearchFocus  ',
                       style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.8),
+                          color: CupertinoColors.white.withValues(alpha: 0.8),
                           fontSize: 13)),
                   Transform.scale(
                     scale: 0.75,
@@ -355,7 +360,7 @@ class _ScenarioExtraButtonState extends State<_ScenarioExtraButton> {
             }),
             quality: GlassQuality.premium,
             extraButton: GlassTabBarExtraButton(
-              icon: const Icon(CupertinoIcons.plus),
+              icon: Icon(CupertinoIcons.plus),
               label: 'Add',
               onTap: () {},
               size: 64,
@@ -414,16 +419,17 @@ class _ScenarioSpringDesyncState extends State<_ScenarioSpringDesync> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text('Toggles: $_toggleCount',
-                  style: const TextStyle(
-                      color: Colors.white,
+                  style: TextStyle(
+                      color: CupertinoColors.white,
                       fontSize: 32,
                       fontWeight: FontWeight.w700)),
-              const SizedBox(height: 12),
+              SizedBox(height: 12),
               Text('✓ No visibly jarring jump on rapid reverse',
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.6), height: 1.6)),
-              const SizedBox(height: 24),
+                      color: CupertinoColors.white.withValues(alpha: 0.6),
+                      height: 1.6)),
+              SizedBox(height: 24),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -434,7 +440,7 @@ class _ScenarioSpringDesyncState extends State<_ScenarioSpringDesync> {
                             _searching = !_searching;
                             _toggleCount++;
                           })),
-                  const SizedBox(width: 12),
+                  SizedBox(width: 12),
                   _ActionButton(
                       label: 'Rapid ×5',
                       color: const Color(0xFFFF9F0A),
@@ -500,11 +506,11 @@ class _ScenarioPaddingFlickerState extends State<_ScenarioPaddingFlicker> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text('Padding change on focus',
-                  style: const TextStyle(
-                      color: Colors.white,
+                  style: TextStyle(
+                      color: CupertinoColors.white,
                       fontSize: 20,
                       fontWeight: FontWeight.w700)),
-              const SizedBox(height: 8),
+              SizedBox(height: 8),
               Text(
                 'hPad: ${hPad.toStringAsFixed(0)}  '
                 'vPad: ${vPad.toStringAsFixed(0)}\n\n'
@@ -512,7 +518,8 @@ class _ScenarioPaddingFlickerState extends State<_ScenarioPaddingFlicker> {
                 'at the moment of toggle.',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.6), height: 1.6),
+                    color: CupertinoColors.white.withValues(alpha: 0.6),
+                    height: 1.6),
               ),
             ],
           ),
@@ -565,7 +572,7 @@ class _ActionButton extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
         decoration: BoxDecoration(
           color: color,
           borderRadius: BorderRadius.circular(24),
@@ -579,8 +586,10 @@ class _ActionButton extends StatelessWidget {
         ),
         child: Text(
           label,
-          style: const TextStyle(
-              color: Colors.white, fontWeight: FontWeight.w700, fontSize: 14),
+          style: TextStyle(
+              color: CupertinoColors.white,
+              fontWeight: FontWeight.w700,
+              fontSize: 14),
         ),
       ),
     );

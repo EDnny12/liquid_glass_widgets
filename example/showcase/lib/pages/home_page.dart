@@ -1,7 +1,7 @@
 import 'dart:math' as math;
 import 'dart:ui';
 
-import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 
@@ -64,8 +64,7 @@ class _HomePageState extends State<HomePage> {
     );
 
     return AppBackground(
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
+      child: GlassScaffold(
         body: GestureDetector(
           onTap: () => _searchFocusNode.unfocus(),
           child: Stack(
@@ -73,9 +72,8 @@ class _HomePageState extends State<HomePage> {
               // Main content: scrollable destination cards
               ListView.separated(
                 itemCount: _filteredDestinations.length,
-                separatorBuilder: (context, index) =>
-                    const SizedBox(height: 20),
-                padding: const EdgeInsets.only(
+                separatorBuilder: (context, index) => SizedBox(height: 20),
+                padding: EdgeInsets.only(
                   top: 200,
                   left: 20,
                   right: 20,
@@ -97,8 +95,8 @@ class _HomePageState extends State<HomePage> {
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [
-                        const Color(0xFF0A1929).withValues(alpha: 0.95),
-                        const Color(0xFF0A1929).withValues(alpha: 0),
+                        Color(0xFF0A1929).withValues(alpha: 0.95),
+                        Color(0xFF0A1929).withValues(alpha: 0),
                       ],
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
@@ -110,14 +108,14 @@ class _HomePageState extends State<HomePage> {
               // Top bar with search and branding
               SafeArea(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                  padding: EdgeInsets.symmetric(horizontal: 20.0),
                   child: Column(
                     children: [
-                      const SizedBox(height: 8),
+                      SizedBox(height: 8),
                       _buildTopBar(),
-                      const SizedBox(height: 16),
+                      SizedBox(height: 16),
                       _buildSearchBar(),
-                      const Spacer(),
+                      Spacer(),
                       _buildBottomBar(),
                     ],
                   ),
@@ -135,13 +133,13 @@ class _HomePageState extends State<HomePage> {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         // Logo/Brand
-        const Column(
+        Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               'Wanderlust',
               style: TextStyle(
-                color: Colors.white,
+                color: CupertinoColors.white,
                 fontSize: 28,
                 fontWeight: FontWeight.w700,
                 letterSpacing: -0.5,
@@ -150,7 +148,7 @@ class _HomePageState extends State<HomePage> {
             Text(
               'Luxury Escapes',
               style: TextStyle(
-                color: Colors.white60,
+                color: CupertinoColors.white.withValues(alpha: 0.60),
                 fontSize: 13,
                 fontWeight: FontWeight.w500,
               ),
@@ -162,7 +160,7 @@ class _HomePageState extends State<HomePage> {
         GlassButton(
           quality: ShowcaseGlassTheme.premiumQuality,
           settings: ShowcaseGlassTheme.profileButton,
-          icon: Icon(Icons.person_outline),
+          icon: Icon(CupertinoIcons.person),
           iconSize: 22,
           width: 44,
           height: 44,
@@ -185,20 +183,20 @@ class _HomePageState extends State<HomePage> {
               focusNode: _searchFocusNode,
               placeholder: 'Search destinations...',
               shape: LiquidRoundedSuperellipse(borderRadius: 50),
-              placeholderStyle: const TextStyle(
-                color: Colors.white60,
+              placeholderStyle: TextStyle(
+                color: CupertinoColors.white.withValues(alpha: 0.60),
                 fontSize: 15,
               ),
-              prefixIcon: const Icon(
-                Icons.search,
-                color: Colors.white70,
+              prefixIcon: Icon(
+                CupertinoIcons.search,
+                color: CupertinoColors.white.withValues(alpha: 0.70),
                 size: 22,
               ),
             ),
           ),
-          const SizedBox(width: 8),
+          SizedBox(width: 8),
           GlassButton(
-            icon: Icon(Icons.tune),
+            icon: Icon(CupertinoIcons.slider_horizontal_3),
             iconSize: 22,
             height: 48,
             width: 48,
@@ -210,57 +208,55 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _showFilterSheet() {
-    showModalBottomSheet(
+    GlassModalSheet.show(
       context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
       builder: (context) => StatefulBuilder(
         builder: (context, setSheetState) => GlassSheet(
           settings: ShowcaseGlassTheme.bottomSheet,
           child: Padding(
-            padding: const EdgeInsets.all(24.0),
+            padding: EdgeInsets.all(24.0),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'Filters',
                   style: TextStyle(
-                    color: Colors.white,
+                    color: CupertinoColors.white,
                     fontSize: 32,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
-                const SizedBox(height: 24),
-                const Text(
+                SizedBox(height: 24),
+                Text(
                   'Price Range',
                   style: TextStyle(
-                    color: Colors.white,
+                    color: CupertinoColors.white,
                     fontSize: 20,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: 8),
                 Row(
                   children: [
                     Text(
                       '\$${_minPrice.toInt()}',
-                      style: const TextStyle(
-                        color: Colors.white70,
+                      style: TextStyle(
+                        color: CupertinoColors.white.withValues(alpha: 0.70),
                         fontSize: 16,
                       ),
                     ),
-                    const Spacer(),
+                    Spacer(),
                     Text(
                       '\$${_maxPrice.toInt()}+',
-                      style: const TextStyle(
-                        color: Colors.white70,
+                      style: TextStyle(
+                        color: CupertinoColors.white.withValues(alpha: 0.70),
                         fontSize: 16,
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 12),
+                SizedBox(height: 12),
                 GlassSlider(
                   value: _maxPrice,
                   min: 0,
@@ -271,14 +267,14 @@ class _HomePageState extends State<HomePage> {
                     });
                   },
                 ),
-                const SizedBox(height: 24),
+                SizedBox(height: 24),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
+                    Text(
                       'Instant Book',
                       style: TextStyle(
-                        color: Colors.white,
+                        color: CupertinoColors.white,
                         fontSize: 20,
                         fontWeight: FontWeight.w600,
                       ),
@@ -293,14 +289,14 @@ class _HomePageState extends State<HomePage> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 24),
+                SizedBox(height: 24),
                 AdaptiveLiquidGlassLayer(
                   settings: ShowcaseGlassTheme.modalActionButtons,
                   child: Row(
                     children: [
                       Expanded(
                         child: GlassButton(
-                          icon: Icon(Icons.clear),
+                          icon: Icon(CupertinoIcons.clear),
                           label: 'Clear',
                           height: 40,
                           shape: LiquidRoundedSuperellipse(borderRadius: 12),
@@ -316,10 +312,10 @@ class _HomePageState extends State<HomePage> {
                           },
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      SizedBox(width: 12),
                       Expanded(
                         child: GlassButton(
-                          icon: Icon(Icons.check),
+                          icon: Icon(CupertinoIcons.checkmark),
                           label: 'Apply',
                           height: 40,
                           shape: LiquidRoundedSuperellipse(borderRadius: 12),
@@ -370,13 +366,13 @@ class _HomePageState extends State<HomePage> {
         tag: 'destination_${destination.id}',
         flightShuttleBuilder:
             (flightContext, animation, direction, fromContext, toContext) {
-          return Material(
-            color: Colors.transparent,
+          return Container(
+            color: Color(0x00000000),
             child: toContext.widget,
           );
         },
-        child: Material(
-          color: Colors.transparent,
+        child: Container(
+          color: Color(0x00000000),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(32),
             child: Container(
@@ -384,7 +380,7 @@ class _HomePageState extends State<HomePage> {
               decoration: BoxDecoration(
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.3),
+                    color: CupertinoColors.black.withValues(alpha: 0.3),
                     blurRadius: 20,
                     offset: const Offset(0, 10),
                   ),
@@ -412,9 +408,9 @@ class _HomePageState extends State<HomePage> {
                         ),
                         child: Center(
                           child: Icon(
-                            Icons.image_outlined,
+                            CupertinoIcons.photo,
                             size: 80,
-                            color: Colors.white.withValues(alpha: 0.5),
+                            color: CupertinoColors.white.withValues(alpha: 0.5),
                           ),
                         ),
                       );
@@ -433,14 +429,14 @@ class _HomePageState extends State<HomePage> {
                           decoration: BoxDecoration(
                             gradient: LinearGradient(
                               colors: [
-                                Colors.black.withValues(alpha: 0.0),
-                                Colors.black.withValues(alpha: 0.6),
+                                CupertinoColors.black.withValues(alpha: 0.0),
+                                CupertinoColors.black.withValues(alpha: 0.6),
                               ],
                               begin: Alignment.topCenter,
                               end: Alignment.bottomCenter,
                             ),
                           ),
-                          padding: const EdgeInsets.all(20),
+                          padding: EdgeInsets.all(20),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -455,8 +451,8 @@ class _HomePageState extends State<HomePage> {
                                       children: [
                                         Text(
                                           destination.name,
-                                          style: const TextStyle(
-                                            color: Colors.white,
+                                          style: TextStyle(
+                                            color: CupertinoColors.white,
                                             fontSize: 22,
                                             fontWeight: FontWeight.w700,
                                           ),
@@ -464,20 +460,22 @@ class _HomePageState extends State<HomePage> {
                                           overflow: TextOverflow.ellipsis,
                                           softWrap: false,
                                         ),
-                                        const SizedBox(height: 4),
+                                        SizedBox(height: 4),
                                         Row(
                                           children: [
-                                            const Icon(
-                                              Icons.location_on_outlined,
-                                              color: Colors.white70,
+                                            Icon(
+                                              CupertinoIcons.location,
+                                              color: CupertinoColors.white
+                                                  .withValues(alpha: 0.70),
                                               size: 16,
                                             ),
-                                            const SizedBox(width: 4),
+                                            SizedBox(width: 4),
                                             Expanded(
                                               child: Text(
                                                 destination.location,
-                                                style: const TextStyle(
-                                                  color: Colors.white70,
+                                                style: TextStyle(
+                                                  color: CupertinoColors.white
+                                                      .withValues(alpha: 0.70),
                                                   fontSize: 14,
                                                 ),
                                                 maxLines: 1,
@@ -489,82 +487,84 @@ class _HomePageState extends State<HomePage> {
                                       ],
                                     ),
                                   ),
-                                  const SizedBox(width: 12),
+                                  SizedBox(width: 12),
                                   GestureDetector(
                                     onTap: () =>
                                         _toggleFavorite(destination.id),
                                     child: Container(
-                                      padding: const EdgeInsets.all(8),
+                                      padding: EdgeInsets.all(8),
                                       decoration: BoxDecoration(
-                                        color:
-                                            Colors.white.withValues(alpha: 0.2),
+                                        color: CupertinoColors.white
+                                            .withValues(alpha: 0.2),
                                         shape: BoxShape.circle,
                                       ),
                                       child: Icon(
                                         isFavorite
-                                            ? Icons.favorite
-                                            : Icons.favorite_outline,
+                                            ? CupertinoIcons.heart_fill
+                                            : CupertinoIcons.heart,
                                         color: isFavorite
-                                            ? Colors.red
-                                            : Colors.white,
+                                            ? CupertinoColors.systemRed
+                                            : CupertinoColors.white,
                                         size: 24,
                                       ),
                                     ),
                                   ),
                                 ],
                               ),
-                              const SizedBox(height: 12),
+                              SizedBox(height: 12),
                               Row(
                                 children: [
                                   Container(
-                                    padding: const EdgeInsets.symmetric(
+                                    padding: EdgeInsets.symmetric(
                                       horizontal: 10,
                                       vertical: 5,
                                     ),
                                     decoration: BoxDecoration(
-                                      color:
-                                          Colors.white.withValues(alpha: 0.2),
+                                      color: CupertinoColors.white
+                                          .withValues(alpha: 0.2),
                                       borderRadius: BorderRadius.circular(12),
                                     ),
                                     child: Row(
                                       children: [
-                                        const Icon(
-                                          Icons.star,
-                                          color: Colors.amber,
+                                        Icon(
+                                          CupertinoIcons.star,
+                                          color: CupertinoColors.activeOrange,
                                           size: 14,
                                         ),
-                                        const SizedBox(width: 4),
+                                        SizedBox(width: 4),
                                         Text(
                                           '${destination.rating}',
-                                          style: const TextStyle(
-                                            color: Colors.white,
+                                          style: TextStyle(
+                                            color: CupertinoColors.white,
                                             fontSize: 13,
                                             fontWeight: FontWeight.w600,
                                           ),
                                         ),
                                         Text(
                                           ' (${destination.reviewCount})',
-                                          style: const TextStyle(
-                                            color: Colors.white70,
+                                          style: TextStyle(
+                                            color: CupertinoColors.white
+                                                .withValues(alpha: 0.70),
                                             fontSize: 12,
                                           ),
                                         ),
                                       ],
                                     ),
                                   ),
-                                  const Spacer(),
+                                  Spacer(),
                                   Text(
                                     '\$${destination.pricePerNight.toStringAsFixed(0)}',
-                                    style: const TextStyle(
-                                      color: Colors.white,
+                                    style: TextStyle(
+                                      color: CupertinoColors.white,
                                       fontSize: 24,
                                       fontWeight: FontWeight.w700,
                                     ),
                                   ),
-                                  const Text(
+                                  Text(
                                     ' /night',
                                     style: TextStyle(
-                                      color: Colors.white70,
+                                      color: CupertinoColors.white
+                                          .withValues(alpha: 0.70),
                                       fontSize: 14,
                                     ),
                                   ),
@@ -586,15 +586,16 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildBottomBar() {
-    const defaultGlassColor = Color(0x3DFFFFFF); // Colors.white24
+    const defaultGlassColor =
+        Color(0x3DFFFFFF); // CupertinoColors.white.withValues(alpha: 0.24)
     const defaultLightAngle =
         0.75 * math.pi; // 135° — Apple standard, upper-left
     return Padding(
-      padding: const EdgeInsets.only(bottom: 0),
+      padding: EdgeInsets.only(bottom: 0),
       child: GlassTabBar.bottom(
         verticalPadding: 0,
         horizontalPadding: 8,
-        indicatorColor: Colors.black26,
+        indicatorColor: CupertinoColors.black.withValues(alpha: 0.26),
         settings: LiquidGlassSettings(
           thickness: 30,
           blur: 3,
@@ -607,11 +608,11 @@ class _HomePageState extends State<HomePage> {
           glassColor: defaultGlassColor,
         ),
         extraButton: GlassTabBarExtraButton(
-          icon: Icon(Icons.support_agent),
+          icon: Icon(CupertinoIcons.person_fill),
           onTap: () {
             Navigator.push(
               context,
-              MaterialPageRoute(
+              CupertinoPageRoute(
                 builder: (context) => const ConciergePage(),
               ),
             );
@@ -621,18 +622,18 @@ class _HomePageState extends State<HomePage> {
         tabs: [
           GlassTab(
             label: 'Explore',
-            icon: const Icon(Icons.explore_outlined),
-            activeIcon: const Icon(Icons.explore),
+            icon: Icon(CupertinoIcons.compass),
+            activeIcon: Icon(CupertinoIcons.compass_fill),
           ),
           GlassTab(
             label: 'Saved',
-            icon: const Icon(Icons.favorite_outline),
-            activeIcon: const Icon(Icons.favorite),
+            icon: Icon(CupertinoIcons.heart),
+            activeIcon: Icon(CupertinoIcons.heart_fill),
           ),
           GlassTab(
             label: 'Trips',
-            icon: const Icon(Icons.backpack_outlined),
-            activeIcon: const Icon(Icons.backpack),
+            icon: Icon(CupertinoIcons.bag),
+            activeIcon: Icon(CupertinoIcons.bag_fill),
           ),
         ],
         selectedIndex: _selectedTab,

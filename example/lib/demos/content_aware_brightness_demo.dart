@@ -11,6 +11,7 @@ library;
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+
 import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 
 void main() async {
@@ -127,7 +128,7 @@ class _ContentAwareBrightnessDemoState
             child: SafeArea(
               bottom: false,
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(24, 12, 24, 0),
+                padding: EdgeInsets.fromLTRB(24, 12, 24, 0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -141,7 +142,7 @@ class _ContentAwareBrightnessDemoState
                         height: 1.1,
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    SizedBox(height: 8),
                     Text(
                       'Scroll down — the bottom bar icons and labels '
                       'adapt automatically as the content behind them '
@@ -155,9 +156,9 @@ class _ContentAwareBrightnessDemoState
                     ),
                     if (_lastFlip != null)
                       Padding(
-                        padding: const EdgeInsets.only(top: 12),
+                        padding: EdgeInsets.only(top: 12),
                         child: Container(
-                          padding: const EdgeInsets.symmetric(
+                          padding: EdgeInsets.symmetric(
                             horizontal: 12,
                             vertical: 6,
                           ),
@@ -173,13 +174,13 @@ class _ContentAwareBrightnessDemoState
                               fontSize: 13,
                               fontWeight: FontWeight.w600,
                               color: _lastFlip == Brightness.dark
-                                  ? Colors.white
+                                  ? CupertinoColors.white
                                   : const Color(0xFF1D1D1F),
                             ),
                           ),
                         ),
                       ),
-                    const SizedBox(height: 24),
+                    SizedBox(height: 24),
                   ],
                 ),
               ),
@@ -233,7 +234,7 @@ class _ContentAwareBrightnessDemoState
           GlassTab(
             label: 'Settings',
             icon: Icon(CupertinoIcons.gear),
-            activeIcon: Icon(CupertinoIcons.gear_solid),
+            activeIcon: Icon(CupertinoIcons.gear),
           ),
         ],
       ),
@@ -274,7 +275,7 @@ class _BandCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       height: 280,
-      margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 0),
+      margin: EdgeInsets.symmetric(horizontal: 0, vertical: 0),
       color: band.color,
       child: Center(
         child: Column(
@@ -282,7 +283,7 @@ class _BandCard extends StatelessWidget {
           children: [
             Icon(band.icon,
                 size: 48, color: band.textColor.withValues(alpha: 0.6)),
-            const SizedBox(height: 16),
+            SizedBox(height: 16),
             Text(
               band.title,
               style: TextStyle(
@@ -292,9 +293,9 @@ class _BandCard extends StatelessWidget {
                 letterSpacing: -0.3,
               ),
             ),
-            const SizedBox(height: 6),
+            SizedBox(height: 6),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 40),
+              padding: EdgeInsets.symmetric(horizontal: 40),
               child: Text(
                 band.subtitle,
                 textAlign: TextAlign.center,

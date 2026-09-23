@@ -7,13 +7,15 @@
 //   • GlassTabBar.searchable() — renders, searchConfig wired, tab switch works
 //   • _GlassTabBarPlacement dispatch — correct engine for each constructor
 //   • GlassTab expanded fields — activeIcon, glowColor, thickness
-//   • Deprecated shim surface — GlassBottomBar / GlassSearchableBottomBar /
-//     GlassBottomBarTab still render correctly
+//   • Deprecated shim surface — GlassTabBar.bottom / GlassTabBar.searchable /
+//     GlassTab still render correctly
 // ignore_for_file: deprecated_member_use
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
+import 'package:liquid_glass_widgets/src/widgets/surfaces/tab_bar_bottom_layout.dart';
+import 'package:liquid_glass_widgets/src/widgets/surfaces/tab_bar_searchable_layout.dart';
 
 import '../../shared/test_helpers.dart';
 
@@ -555,6 +557,25 @@ void main() {
 
       expect(tester.takeException(), isNull);
     });
+
+    testWidgets('forwards backgroundQuality to TabBarBottomLayout',
+        (tester) async {
+      await tester.pumpWidget(_wrap(_box(
+        GlassTabBar.inline(
+          tabs: [_tab('A'), _tab('B')],
+          selectedIndex: 0,
+          onTabSelected: (_) {},
+          quality: GlassQuality.premium,
+          backgroundQuality: GlassQuality.minimal,
+        ),
+      )));
+      await tester.pump();
+
+      final layout = tester.widget<TabBarBottomLayout>(
+        find.byType(TabBarBottomLayout),
+      );
+      expect(layout.backgroundQuality, equals(GlassQuality.minimal));
+    });
   });
 
   // -------------------------------------------------------------------------
@@ -700,6 +721,29 @@ void main() {
 
       expect(find.text('A'), findsWidgets);
     });
+
+    testWidgets('forwards backgroundQuality to TabBarSearchableLayout',
+        (tester) async {
+      await tester.pumpWidget(_wrap(
+        SizedBox(
+          height: 150,
+          child: GlassTabBar.searchable(
+            tabs: [_tab('A'), _tab('B')],
+            selectedIndex: 0,
+            onTabSelected: (_) {},
+            searchConfig: searchConfig,
+            quality: GlassQuality.premium,
+            backgroundQuality: GlassQuality.minimal,
+          ),
+        ),
+      ));
+      await tester.pump();
+
+      final layout = tester.widget<TabBarSearchableLayout>(
+        find.byType(TabBarSearchableLayout),
+      );
+      expect(layout.backgroundQuality, equals(GlassQuality.minimal));
+    });
   });
 
   // -------------------------------------------------------------------------
@@ -729,8 +773,8 @@ void main() {
       await tester.pump();
 
       expect(find.byType(GlassSegmentedControl), findsOneWidget);
-      // Inline mode must NOT produce a GlassBottomBar
-      expect(find.byType(GlassBottomBar), findsNothing);
+      // Inline mode must NOT produce a GlassTabBar.bottom
+      expect(find.byType(GlassTabBar), findsNothing);
     });
 
     testWidgets('.bottom() dispatches to TabBarBottomLayout', (tester) async {
@@ -743,10 +787,8 @@ void main() {
       )));
       await tester.pump();
 
-      // GlassTabBar.bottom() now renders directly via TabBarBottomLayout
-      // (no bridge class) — GlassBottomBar does NOT appear in the tree.
       expect(find.byType(GlassTabBar), findsOneWidget);
-      expect(find.byType(GlassBottomBar), findsNothing);
+      expect(find.byType(TabBarBottomLayout), findsOneWidget);
     });
 
     testWidgets('.searchable() dispatches to TabBarSearchableLayout',
@@ -765,10 +807,8 @@ void main() {
       ));
       await tester.pump();
 
-      // GlassTabBar.searchable() now renders directly via TabBarSearchableLayout
-      // (no bridge class) — GlassSearchableBottomBar does NOT appear in the tree.
       expect(find.byType(GlassTabBar), findsOneWidget);
-      expect(find.byType(GlassSearchableBottomBar), findsNothing);
+      expect(find.byType(TabBarSearchableLayout), findsOneWidget);
     });
 
     testWidgets('.inline() dispatches to TabBarBottomLayout', (tester) async {
@@ -781,10 +821,8 @@ void main() {
       )));
       await tester.pump();
 
-      // GlassTabBar.inline() routes through TabBarBottomLayout with compact
-      // defaults — no GlassBottomBar bridge in the tree.
       expect(find.byType(GlassTabBar), findsOneWidget);
-      expect(find.byType(GlassBottomBar), findsNothing);
+      expect(find.byType(TabBarBottomLayout), findsOneWidget);
     });
   });
 
@@ -792,20 +830,20 @@ void main() {
   // Deprecated shim API — verify zero-logic shims still render correctly
   // -------------------------------------------------------------------------
 
-  group('Deprecated shim API — GlassBottomBar / GlassBottomBarTab', () {
-    testWidgets('GlassBottomBar still renders with GlassBottomBarTab',
+  group('Deprecated shim API — GlassTabBar.bottom / GlassTab', () {
+    testWidgets('GlassTabBar.bottom still renders with GlassTab',
         (tester) async {
       await tester.pumpWidget(_wrap(_box(
-        GlassBottomBar(
+        GlassTabBar.bottom(
           tabs: [
-            GlassBottomBarTab(
+            GlassTab(
               label: 'Home',
               icon: const Icon(Icons.home),
               activeIcon: const Icon(Icons.home_filled),
               glowColor: Colors.blue,
               thickness: 1.0,
             ),
-            GlassBottomBarTab(
+            GlassTab(
               label: 'Search',
               icon: const Icon(Icons.search),
             ),
@@ -820,16 +858,16 @@ void main() {
       expect(find.text('Search'), findsWidgets);
     });
 
-    testWidgets('GlassBottomBar onTabSelected still fires correctly',
+    testWidgets('GlassTabBar.bottom onTabSelected still fires correctly',
         (tester) async {
       int received = -1;
 
       await tester.pumpWidget(_wrap(_box(
         StatefulBuilder(
-          builder: (context, setState) => GlassBottomBar(
+          builder: (context, setState) => GlassTabBar.bottom(
             tabs: [
-              GlassBottomBarTab(label: 'A', icon: const Icon(Icons.home)),
-              GlassBottomBarTab(label: 'B', icon: const Icon(Icons.search)),
+              GlassTab(label: 'A', icon: const Icon(Icons.home)),
+              GlassTab(label: 'B', icon: const Icon(Icons.search)),
             ],
             selectedIndex: 0,
             onTabSelected: (i) => setState(() => received = i),
@@ -844,16 +882,15 @@ void main() {
       expect(received, 1);
     });
 
-    testWidgets('GlassSearchableBottomBar still renders with GlassBottomBarTab',
+    testWidgets('GlassTabBar.searchable still renders with GlassTab',
         (tester) async {
       await tester.pumpWidget(_wrap(
         SizedBox(
           height: 150,
-          child: GlassSearchableBottomBar(
+          child: GlassTabBar.searchable(
             tabs: [
-              GlassBottomBarTab(label: 'Home', icon: const Icon(Icons.home)),
-              GlassBottomBarTab(
-                  label: 'Browse', icon: const Icon(Icons.explore)),
+              GlassTab(label: 'Home', icon: const Icon(Icons.home)),
+              GlassTab(label: 'Browse', icon: const Icon(Icons.explore)),
             ],
             selectedIndex: 0,
             onTabSelected: (_) {},

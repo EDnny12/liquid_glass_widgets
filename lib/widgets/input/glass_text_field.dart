@@ -1,10 +1,10 @@
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../src/renderer/liquid_glass_renderer.dart';
 import '../../src/types/glass_interaction_behavior.dart';
 import '../../types/glass_quality.dart';
 import '../shared/adaptive_glass.dart';
+import '../shared/glass_focus_region.dart';
 import '../../theme/glass_theme_helpers.dart';
 import '../../theme/glass_theme.dart';
 
@@ -96,7 +96,7 @@ class GlassTextField extends StatefulWidget {
     this.minHeight,
     this.maxHeight,
     this.bottom,
-    this.shape = const LiquidRoundedSuperellipse(borderRadius: 10),
+    this.shape = const LiquidRoundedRectangle(borderRadius: 10),
     this.settings,
     this.useOwnLayer = false,
     this.quality,
@@ -134,7 +134,7 @@ class GlassTextField extends StatefulWidget {
     this.padding = const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
     this.iconSpacing = 8.0,
     this.height = 44.0,
-    this.shape = const LiquidRoundedSuperellipse(borderRadius: 22),
+    this.shape = const LiquidRoundedRectangle(borderRadius: 22),
     this.settings,
     this.useOwnLayer = false,
     this.quality,
@@ -268,7 +268,7 @@ class GlassTextField extends StatefulWidget {
 
   /// Shape of the text field.
   ///
-  /// Defaults to [LiquidRoundedSuperellipse] with 10px border radius.
+  /// Defaults to [LiquidRoundedRectangle] with 10px border radius.
   final LiquidShape shape;
 
   /// Vertical alignment of prefix and suffix icons.
@@ -369,7 +369,7 @@ class GlassTextField extends StatefulWidget {
 
   /// Controls which press-interaction effects are active on this field.
   ///
-  /// Mirrors the API on [GlassBottomBar] and [GlassSearchableBottomBar] for
+  /// Mirrors the API on [GlassTabBar] for
   /// a consistent developer experience across all glass surfaces:
   ///
   /// | Value | Glow | Scale-on-focus |
@@ -422,7 +422,6 @@ class _GlassTextFieldState extends State<GlassTextField> {
   late FocusNode _focusNode;
   // Tracks whether _focusNode was created by us (true) or provided externally.
   bool _ownsNode = false;
-  bool _isFocused = false;
   bool _isPressed = false;
   int _currentLineCount = 0;
   TextEditingController? _effectiveController;
@@ -456,8 +455,6 @@ class _GlassTextFieldState extends State<GlassTextField> {
       _focusNode = FocusNode();
       _ownsNode = true;
     }
-    _isFocused = _focusNode.hasFocus;
-    _focusNode.addListener(_onFocusChange);
 
     _initController();
 
@@ -478,19 +475,13 @@ class _GlassTextFieldState extends State<GlassTextField> {
     }
   }
 
-  void _onFocusChange() {
-    if (_isFocused != _focusNode.hasFocus) {
-      setState(() => _isFocused = _focusNode.hasFocus);
-    }
-  }
-
   @override
   void didUpdateWidget(GlassTextField oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // If the external focusNode reference changed, rewire the listener.
+    // If the external focusNode reference changed, rewire ownership.
+    // GlassFocusRegion.observe handles its own listener — we only manage
+    // node creation/disposal here.
     if (oldWidget.focusNode != widget.focusNode) {
-      _focusNode.removeListener(_onFocusChange);
-
       // Dispose the old node only if we owned it.
       if (_ownsNode) _focusNode.dispose();
 
@@ -503,9 +494,6 @@ class _GlassTextFieldState extends State<GlassTextField> {
         _focusNode = FocusNode();
         _ownsNode = true;
       }
-
-      _focusNode.addListener(_onFocusChange);
-      _isFocused = _focusNode.hasFocus;
     }
     // If the external controller reference changed, rewire the listener.
     if (oldWidget.controller != widget.controller) {
@@ -520,7 +508,6 @@ class _GlassTextFieldState extends State<GlassTextField> {
 
   @override
   void dispose() {
-    _focusNode.removeListener(_onFocusChange);
     if (_ownsNode) _focusNode.dispose();
     _effectiveController?.removeListener(_onControllerChange);
     super.dispose();
@@ -724,7 +711,7 @@ class _GlassTextFieldState extends State<GlassTextField> {
     // Apply glass effect
     // iOS 26: wrap in GlassGlow only when interactionBehavior includes glow.
     // _wrapWithGlow skips the widget entirely when glow is suppressed,
-    // saving 3 widget/render-object allocations — same pattern as GlassBottomBar.
+    // saving 3 widget/render-object allocations — same pattern as GlassTabBar.bottom.
     Widget glassWidget = AdaptiveGlass(
       shape: widget.shape,
       settings: GlassThemeHelpers.resolveSettings(
@@ -757,9 +744,30 @@ class _GlassTextFieldState extends State<GlassTextField> {
       );
     }
 
-    return Opacity(
-      opacity: widget.enabled ? 1.0 : 0.5,
-      child: _wrapWithConstraints(glassWidget),
+    // ── Focus ring (keyboard navigation) ─────────────────────────────────────
+    // GlassFocusRegion.observe() listens to _focusNode internally and paints
+    // the ring without creating a FocusableActionDetector — preserving
+    // CupertinoTextField's full ownership of the focus lifecycle.
+    //
+    final shapeRadius = widget.shape.toBorderRadius();
+    final ShapeBorder ringShape = shapeRadius != null
+        ? RoundedRectangleBorder(borderRadius: shapeRadius)
+        : RoundedRectangleBorder(borderRadius: BorderRadius.circular(22));
+
+    // Semantics: declare as a text field so screen readers announce correctly.
+    // CupertinoTextField's own semantics handle editing actions/value/cursor.
+    return Semantics(
+      textField: true,
+      enabled: widget.enabled,
+      readOnly: widget.readOnly,
+      child: Opacity(
+        opacity: widget.enabled ? 1.0 : 0.5,
+        child: GlassFocusRegion.observe(
+          focusNode: _focusNode,
+          shape: ringShape,
+          child: _wrapWithConstraints(glassWidget),
+        ),
+      ),
     );
   }
 

@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
+
 import 'package:liquid_glass_widgets_example/constants/glass_settings.dart';
-import 'package:flutter/material.dart';
+
 import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 
 class InputsPage extends StatelessWidget {
@@ -11,8 +12,8 @@ class InputsPage extends StatelessWidget {
     return AdaptiveLiquidGlassLayer(
       // Widgets inside use LightweightLiquidGlass (standard) or full shader (premium)
       settings: RecommendedGlassSettings.input,
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
+      child: GlassScaffold(
+        backgroundColor: const Color(0x00000000),
         appBar: GlassAppBar(
           title: Text(
             'Inputs',
@@ -23,7 +24,7 @@ class InputsPage extends StatelessWidget {
           ),
         ),
         body: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
+          padding: EdgeInsets.all(24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -55,7 +56,7 @@ class InputsPage extends StatelessWidget {
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Padding(
-                  padding: const EdgeInsets.all(20),
+                  padding: EdgeInsets.all(20),
                   child: Column(
                     children: [
                       GlassFormField(
@@ -102,7 +103,7 @@ class InputsPage extends StatelessWidget {
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Padding(
-                  padding: const EdgeInsets.all(20),
+                  padding: EdgeInsets.all(20),
                   child: GlassFormField(
                     label: 'Bio / Description',
                     child: GlassTextArea(
@@ -139,7 +140,7 @@ class _SectionHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
+      padding: EdgeInsets.only(bottom: 16),
       child: Text(
         text,
         style: TextStyle(

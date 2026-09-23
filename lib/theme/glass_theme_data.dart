@@ -1,6 +1,6 @@
 import 'dart:ui' show lerpDouble;
 
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import '../src/renderer/liquid_glass_renderer.dart';
 import '../utils/glass_brightness.dart';
 import 'glass_interaction_settings.dart';
@@ -278,7 +278,7 @@ class GlassThemeVariant {
   /// Default light theme variant.
   ///
   /// [quality] is intentionally `null` here so that each widget's own
-  /// documented default quality is respected (e.g. [GlassBottomBar] defaults
+  /// documented default quality is respected (e.g. [GlassTabBar.bottom] defaults
   /// to [GlassQuality.premium]). Set quality explicitly in your
   /// [GlassThemeVariant] to override all widgets globally.
   static const GlassThemeVariant light = GlassThemeVariant(
@@ -300,7 +300,7 @@ class GlassThemeVariant {
   /// Default dark theme variant.
   ///
   /// [quality] is intentionally `null` here so that each widget's own
-  /// documented default quality is respected (e.g. [GlassBottomBar] defaults
+  /// documented default quality is respected (e.g. [GlassTabBar.bottom] defaults
   /// to [GlassQuality.premium]). Set quality explicitly in your
   /// [GlassThemeVariant] to override all widgets globally.
   static const GlassThemeVariant dark = GlassThemeVariant(
@@ -417,7 +417,7 @@ class GlassThemeData {
   /// Creates glass theme data from a flat set of common properties.
   ///
   /// This is the **recommended constructor for most apps**. It applies the
-  /// same [settings] and [quality] to both light and dark modes using the
+  /// same `settings` and `quality` to both light and dark modes using the
   /// library's built-in light/dark defaults as a base — you only need to
   /// specify what you want to change.
   ///

@@ -1,6 +1,7 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 
+import '../../src/renderer/liquid_glass_push_back_scope.dart';
 import '../../src/renderer/liquid_glass_renderer.dart';
 import 'adaptive_liquid_glass_layer.dart';
 
@@ -14,6 +15,8 @@ import '../../theme/glass_theme_data.dart';
 // in debug mode to emit a helpful error if setup was skipped.
 // Marked as visible for testing — do not use in production code.
 @visibleForTesting
+
+/// Whether the initialization guard is enabled.
 bool glassPageInitializeGuardEnabled = true;
 
 /// Controls how [GlassPage] styles the system status bar.
@@ -38,31 +41,27 @@ enum GlassStatusBarStyle {
 /// [GlassPage] eliminates the boilerplate required to set up a correct,
 /// performant glass UI on any route. In a single widget it handles:
 ///
-/// 1. **Transparent Scaffold** — forces the [Scaffold]'s default background
-///    colour to transparent via a [Theme] override, so your [background] shows
-///    through without any extra configuration.
-///
-/// 2. **Backdrop Isolation** — each glass layer manages its own GPU backdrop
+/// 1. **Backdrop Isolation** — each glass layer manages its own GPU backdrop
 ///    capture, preventing ghost artefacts when navigating between routes.
 ///
-/// 3. **Background Scope** — wraps the route in a [LiquidGlassScope] so that
+/// 2. **Background Scope** — wraps the route in a [LiquidGlassScope] so that
 ///    [GlassBackgroundSource] can locate the capture key when
 ///    [enableBackgroundSampling] is `true`. Required for real colour absorption.
 ///
-/// 4. **System Status Bar** — optionally adjusts icon brightness to match your
+/// 3. **System Status Bar** — optionally adjusts icon brightness to match your
 ///    background via [statusBarStyle]. Automatically restores the previous style
 ///    when the page is disposed.
 ///
-/// 5. **Edge-to-Edge** — optionally enables [SystemUiMode.edgeToEdge] so
+/// 4. **Edge-to-Edge** — optionally enables [SystemUiMode.edgeToEdge] so
 ///    content draws behind the status and navigation bars. Restores the
 ///    previous mode on dispose.
 ///
-/// 6. **Per-Page Theme Override** — optionally wraps the subtree in a scoped
+/// 5. **Per-Page Theme Override** — optionally wraps the subtree in a scoped
 ///    [GlassTheme] via [themeOverride], letting individual screens break from
 ///    the app-wide glass theme (e.g. a more dramatic onboarding or paywall
 ///    screen). Widget-level `settings` parameters still take precedence.
 ///
-/// 7. **Setup Guard (debug only)** — emits a [FlutterError] in debug mode if
+/// 6. **Setup Guard (debug only)** — emits a [FlutterError] in debug mode if
 ///    [LiquidGlassWidgets.initialize] was never called, with a direct link to
 ///    the correct setup pattern.
 ///
@@ -279,6 +278,49 @@ class GlassPage extends StatefulWidget {
 class _GlassPageState extends State<GlassPage> {
   SystemUiOverlayStyle? _previousOverlayStyle;
 
+  // ── Push-back scope ────────────────────────────────────────────────────────
+  // Tracks whether the route this page sits on is currently being pushed back
+  // by a presented sheet (secondaryAnimation > 0 and not yet fully dismissed).
+  // When true, LiquidGlassPushBackScope emits active: true into the subtree,
+  // allowing RenderLiquidGlassLayer._hasScale() to freeze UV coordinates.
+  // When false (at rest, or no route found), the scope is inactive, so a
+  // static app-level scale (e.g. responsive_framework) never triggers the
+  // freeze that caused jitter (#292).
+  bool _pushBackActive = false;
+  Animation<double>? _listenedSecondaryAnimation;
+  ModalRoute<dynamic>? _route;
+
+  // Mirrors GlassNavigationShell._isAtRest() — no transition is in flight.
+  static bool _isAtRest(ModalRoute<dynamic> route) =>
+      (route.animation?.status ?? AnimationStatus.completed) ==
+          AnimationStatus.completed &&
+      (route.secondaryAnimation?.status ?? AnimationStatus.dismissed) ==
+          AnimationStatus.dismissed &&
+      !(route.navigator?.userGestureInProgress ?? false);
+
+  void _onAnimationTick() {
+    if (!mounted) return;
+    final route = _route;
+    if (route == null) return;
+    final secondary = route.secondaryAnimation;
+    final next = !_isAtRest(route) && (secondary?.value ?? 0.0) > 0.0;
+    if (next != _pushBackActive) {
+      setState(() => _pushBackActive = next);
+    }
+  }
+
+  void _subscribeSecondaryAnimation(Animation<double>? animation) {
+    if (animation == _listenedSecondaryAnimation) return;
+    _listenedSecondaryAnimation?.removeListener(_onAnimationTick);
+    _listenedSecondaryAnimation?.removeStatusListener(_onAnimationStatus);
+    _listenedSecondaryAnimation = animation;
+    _listenedSecondaryAnimation?.addListener(_onAnimationTick);
+    _listenedSecondaryAnimation?.addStatusListener(_onAnimationStatus);
+  }
+
+  void _onAnimationStatus(AnimationStatus _) => _onAnimationTick();
+  // ── End push-back scope ───────────────────────────────────────────────────
+
   bool get _effectiveSampling =>
       widget.enableBackgroundSampling ?? (widget.background != null);
 
@@ -295,6 +337,8 @@ class _GlassPageState extends State<GlassPage> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     _applyStatusBarStyle();
+    _route = ModalRoute.of(context);
+    _subscribeSecondaryAnimation(_route?.secondaryAnimation);
   }
 
   @override
@@ -313,6 +357,8 @@ class _GlassPageState extends State<GlassPage> {
 
   @override
   void dispose() {
+    _subscribeSecondaryAnimation(null); // removes listeners
+    _route = null;
     // Restore the previous overlay style if we changed it.
     if (_previousOverlayStyle != null) {
       SystemChrome.setSystemUIOverlayStyle(_previousOverlayStyle!);
@@ -370,62 +416,41 @@ class _GlassPageState extends State<GlassPage> {
 
     final bool doSample = _effectiveSampling && quality != GlassQuality.minimal;
 
-    Widget content = LiquidGlassScope(
-      child: Stack(
-        children: [
-          // 1. Background layer — only rendered when a background is provided.
-          if (widget.background != null)
+    Widget content = LiquidGlassPushBackScope(
+      active: _pushBackActive,
+      child: LiquidGlassScope(
+        child: Stack(
+          children: [
+            // 1. Background layer — only rendered when a background is provided.
+            if (widget.background != null)
+              Positioned.fill(
+                child: GlassBackgroundSource(
+                  enabled: doSample,
+                  child: widget.background!,
+                ),
+              ),
+
+            // 2. Content layer.
+            // When background is provided: force transparent Scaffold so the
+            // wallpaper shows through.
+            // When no background: leave Scaffold colour alone — it renders with
+            // its own backgroundColor as the developer set it.
+            //
+            // The AdaptiveLiquidGlassLayer provides the LiquidGlassRenderScope
+            // that all glass widgets (GlassAppBar, GlassButton, GlassCard, etc.)
+            // need to render. Without it, using any glass widget inside a
+            // Scaffold's appBar slot would crash with "No liquid glass renderer
+            // found in context". Settings and quality resolve from GlassTheme
+            // automatically; individual widgets override via their own `settings`
+            // parameter.
             Positioned.fill(
-              child: GlassBackgroundSource(
-                enabled: doSample,
-                child: widget.background!,
+              child: AdaptiveLiquidGlassLayer(
+                settings: widget.settings,
+                child: widget.child,
               ),
             ),
-
-          // 2. Content layer.
-          // When background is provided: force transparent Scaffold so the
-          // wallpaper shows through.
-          // When no background: leave Scaffold colour alone — it renders with
-          // its own backgroundColor as the developer set it.
-          //
-          // The AdaptiveLiquidGlassLayer provides the LiquidGlassRenderScope
-          // that all glass widgets (GlassAppBar, GlassButton, GlassCard, etc.)
-          // need to render. Without it, using any glass widget inside a
-          // Scaffold's appBar slot would crash with "No liquid glass renderer
-          // found in context". Settings and quality resolve from GlassTheme
-          // automatically; individual widgets override via their own `settings`
-          // parameter.
-          Positioned.fill(
-            child: AdaptiveLiquidGlassLayer(
-              settings: widget.settings,
-              child: widget.background != null
-                  ? Builder(
-                      builder: (context) {
-                        // Make the scaffold background transparent so the
-                        // glass layer shows through. Use MaterialLocalizations
-                        // presence to guard against pure CupertinoApp hosts
-                        // which have no Material Theme in scope.
-                        final hasMaterial =
-                            Localizations.of<MaterialLocalizations>(
-                                  context,
-                                  MaterialLocalizations,
-                                ) !=
-                                null;
-                        final child = widget.child;
-                        if (!hasMaterial) return child;
-                        return Theme(
-                          data: Theme.of(context).copyWith(
-                            scaffoldBackgroundColor:
-                                const Color(0x00000000), // transparent
-                          ),
-                          child: child,
-                        );
-                      },
-                    )
-                  : widget.child,
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
 

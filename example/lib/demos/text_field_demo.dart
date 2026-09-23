@@ -8,6 +8,7 @@ library;
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+
 import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 
 void main() async {
@@ -96,7 +97,7 @@ class _TextFieldDemoState extends State<TextFieldDemo> {
 
     return GlassPage(
       background: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -109,10 +110,10 @@ class _TextFieldDemoState extends State<TextFieldDemo> {
           ),
         ),
       ),
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
+      child: GlassScaffold(
+        backgroundColor: const Color(0x00000000),
         appBar: GlassAppBar(
-          title: const Text('GlassTextField'),
+          title: Text('GlassTextField'),
         ),
         body: SingleChildScrollView(
           padding: EdgeInsets.only(
@@ -124,22 +125,25 @@ class _TextFieldDemoState extends State<TextFieldDemo> {
               // ── Search bar ──────────────────────────────────────────────
               _section('Search bar', 'Fixed height · text stays centred'),
               Padding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 4),
+                padding: EdgeInsets.fromLTRB(16, 0, 16, 4),
                 child: GlassTextField.search(
                   controller: _searchController,
                   placeholder: 'Search…',
-                  prefixIcon: const Icon(
+                  prefixIcon: Icon(
                     CupertinoIcons.search,
                     size: 20,
-                    color: Colors.white60,
+                    color: CupertinoColors.white.withValues(alpha: 0.60),
                   ),
                   useOwnLayer: true,
                   quality: GlassQuality.premium,
                 ),
               ),
 
-              const SizedBox(height: 8),
-              const Divider(color: Colors.white12, indent: 16, endIndent: 16),
+              SizedBox(height: 8),
+              Divider(
+                  color: CupertinoColors.white.withValues(alpha: 0.12),
+                  indent: 16,
+                  endIndent: 16),
 
               // ── Expandable input ────────────────────────────────────────
               _section(
@@ -147,7 +151,7 @@ class _TextFieldDemoState extends State<TextFieldDemo> {
                 'Pill when single-line · grows to fit · animated radius',
               ),
               Padding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 4),
+                padding: EdgeInsets.fromLTRB(16, 0, 16, 4),
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 250),
                   curve: Curves.easeOutCubic,
@@ -160,11 +164,15 @@ class _TextFieldDemoState extends State<TextFieldDemo> {
                     height: expandHeight,
                     iconAlignment: CrossAxisAlignment.end,
                     prefixIcon: Icon(
-                      _expandHasFocus ? Icons.playlist_remove : Icons.edit_note,
-                      color: Colors.white60,
+                      _expandHasFocus
+                          ? CupertinoIcons.trash
+                          : CupertinoIcons.pencil,
+                      color: CupertinoColors.white.withValues(alpha: 0.60),
                     ),
                     suffixIcon: _expandHasFocus
-                        ? const Icon(Icons.send, color: Colors.white70)
+                        ? Icon(CupertinoIcons.paperplane,
+                            color:
+                                CupertinoColors.white.withValues(alpha: 0.70))
                         : null,
                     onLineCountChanged: (lines) {
                       setState(() => _expandLines = lines);
@@ -182,8 +190,11 @@ class _TextFieldDemoState extends State<TextFieldDemo> {
                 ),
               ),
 
-              const SizedBox(height: 8),
-              const Divider(color: Colors.white12, indent: 16, endIndent: 16),
+              SizedBox(height: 8),
+              Divider(
+                  color: CupertinoColors.white.withValues(alpha: 0.12),
+                  indent: 16,
+                  endIndent: 16),
 
               // ── Chat composer with bottom panel ─────────────────────────
               _section(
@@ -195,7 +206,7 @@ class _TextFieldDemoState extends State<TextFieldDemo> {
               SizedBox(
                 height: 200,
                 child: ListView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  padding: EdgeInsets.symmetric(horizontal: 16),
                   reverse: true,
                   itemCount: _messages.length,
                   itemBuilder: (context, index) {
@@ -205,7 +216,7 @@ class _TextFieldDemoState extends State<TextFieldDemo> {
                       alignment:
                           isMe ? Alignment.centerRight : Alignment.centerLeft,
                       child: Container(
-                        margin: const EdgeInsets.symmetric(vertical: 3),
+                        margin: EdgeInsets.symmetric(vertical: 3),
                         constraints: BoxConstraints(
                           maxWidth: MediaQuery.of(context).size.width * 0.75,
                         ),
@@ -217,18 +228,19 @@ class _TextFieldDemoState extends State<TextFieldDemo> {
                           ),
                           settings: LiquidGlassSettings(
                             glassColor: isMe
-                                ? Colors.blue.withValues(alpha: 0.3)
-                                : Colors.white.withValues(alpha: 0.15),
+                                ? CupertinoColors.activeBlue
+                                    .withValues(alpha: 0.3)
+                                : CupertinoColors.white.withValues(alpha: 0.15),
                           ),
                           child: Padding(
-                            padding: const EdgeInsets.symmetric(
+                            padding: EdgeInsets.symmetric(
                               horizontal: 12,
                               vertical: 8,
                             ),
                             child: Text(
                               _messages[msgIndex],
-                              style: const TextStyle(
-                                color: Colors.white,
+                              style: TextStyle(
+                                color: CupertinoColors.white,
                                 fontSize: 14,
                               ),
                             ),
@@ -242,7 +254,7 @@ class _TextFieldDemoState extends State<TextFieldDemo> {
 
               // Composer
               Padding(
-                padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
+                padding: EdgeInsets.fromLTRB(16, 4, 16, 24),
                 child: GlassTextField(
                   controller: _composerController,
                   placeholder: 'Message…',
@@ -258,14 +270,14 @@ class _TextFieldDemoState extends State<TextFieldDemo> {
                   ),
                   useOwnLayer: true,
                   quality: GlassQuality.premium,
-                  padding: const EdgeInsets.symmetric(
+                  padding: EdgeInsets.symmetric(
                     horizontal: 12,
                     vertical: 10,
                   ),
                   interactionBehavior: GlassInteractionBehavior.full,
                   onChanged: (_) => setState(() {}),
                   bottom: Padding(
-                    padding: const EdgeInsets.symmetric(
+                    padding: EdgeInsets.symmetric(
                       horizontal: 8,
                       vertical: 4,
                     ),
@@ -275,7 +287,7 @@ class _TextFieldDemoState extends State<TextFieldDemo> {
                           icon: Icon(
                             CupertinoIcons.paperclip,
                             size: 20,
-                            color: Colors.white.withValues(alpha: 0.6),
+                            color: CupertinoColors.white.withValues(alpha: 0.6),
                           ),
                           onPressed: () {},
                         ),
@@ -283,7 +295,7 @@ class _TextFieldDemoState extends State<TextFieldDemo> {
                           icon: Icon(
                             CupertinoIcons.camera,
                             size: 20,
-                            color: Colors.white.withValues(alpha: 0.6),
+                            color: CupertinoColors.white.withValues(alpha: 0.6),
                           ),
                           onPressed: () {},
                         ),
@@ -308,8 +320,9 @@ class _TextFieldDemoState extends State<TextFieldDemo> {
                               CupertinoIcons.arrow_up_circle_fill,
                               size: 28,
                               color: _composerController.text.isNotEmpty
-                                  ? Colors.white
-                                  : Colors.white38,
+                                  ? CupertinoColors.white
+                                  : CupertinoColors.white
+                                      .withValues(alpha: 0.38),
                             ),
                             onPressed: _sendMessage,
                           ),
@@ -330,24 +343,24 @@ class _TextFieldDemoState extends State<TextFieldDemo> {
 
   Widget _section(String title, String subtitle) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 6),
+      padding: EdgeInsets.fromLTRB(20, 16, 20, 6),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             title,
-            style: const TextStyle(
-              color: Colors.white70,
+            style: TextStyle(
+              color: CupertinoColors.white.withValues(alpha: 0.70),
               fontSize: 13,
               fontWeight: FontWeight.w600,
               letterSpacing: 0.3,
             ),
           ),
-          const SizedBox(height: 2),
+          SizedBox(height: 2),
           Text(
             subtitle,
             style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.4),
+              color: CupertinoColors.white.withValues(alpha: 0.4),
               fontSize: 11,
             ),
           ),

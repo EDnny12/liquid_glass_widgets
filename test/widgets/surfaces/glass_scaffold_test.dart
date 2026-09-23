@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
@@ -13,11 +14,11 @@ void main() {
             settings: defaultTestGlassSettings,
             child: GlassScaffold(
               body: const Text('Body'),
-              bottomBar: GlassBottomBar(
+              bottomBar: GlassTabBar.bottom(
                 selectedIndex: 0,
                 onTabSelected: (_) {},
                 tabs: const [
-                  GlassBottomBarTab(
+                  GlassTab(
                     label: 'Tab 1',
                     icon: Icon(Icons.home),
                   ),
@@ -29,7 +30,7 @@ void main() {
       );
 
       expect(find.text('Body'), findsOneWidget);
-      expect(find.byType(GlassBottomBar), findsOneWidget);
+      expect(find.byType(GlassTabBar), findsOneWidget);
     });
 
     testWidgets('renders with app bar', (tester) async {
@@ -105,6 +106,55 @@ void main() {
       expect(scrollEdge.topFadeHeight, 64.0);
     });
 
+    testWidgets(
+        'defaults to GlassScrollEdgeStyle.soft and does not render ProgressiveBlur',
+        (tester) async {
+      await tester.pumpWidget(
+        createTestApp(
+          child: AdaptiveLiquidGlassLayer(
+            settings: defaultTestGlassSettings,
+            child: const GlassScaffold(
+              topEdgeFade: true,
+              body: SizedBox.expand(),
+            ),
+          ),
+        ),
+      );
+
+      final scrollEdge = tester.widget<GlassScrollEdgeEffect>(
+        find.byType(GlassScrollEdgeEffect),
+      );
+      expect(scrollEdge.style, GlassScrollEdgeStyle.soft);
+      expect(find.byType(ProgressiveBlur), findsNothing);
+    });
+
+    testWidgets(
+        'forwards explicit blur edgeStyle to GlassScrollEdgeEffect and renders ProgressiveBlur',
+        (tester) async {
+      await tester.pumpWidget(
+        createTestApp(
+          child: AdaptiveLiquidGlassLayer(
+            settings: defaultTestGlassSettings,
+            child: const GlassScaffold(
+              topEdgeFade: true,
+              edgeStyle: GlassScrollEdgeStyle.blur,
+              maxSigma: 22,
+              body: SizedBox.expand(),
+            ),
+          ),
+        ),
+      );
+
+      final scrollEdge = tester.widget<GlassScrollEdgeEffect>(
+        find.byType(GlassScrollEdgeEffect),
+      );
+      expect(scrollEdge.style, GlassScrollEdgeStyle.blur);
+      expect(scrollEdge.maxSigma, 22);
+
+      final blur = tester.widget<ProgressiveBlur>(find.byType(ProgressiveBlur));
+      expect(blur.maxSigma, 22);
+    });
+
     // ── Isolation scope: bars get premium quality hint ───────────────────────
 
     testWidgets('wraps bars in GlassIsolationScope with defaultQuality premium',
@@ -116,11 +166,11 @@ void main() {
             child: GlassScaffold(
               appBar: const GlassAppBar(title: Text('Title')),
               body: const Text('Body'),
-              bottomBar: GlassBottomBar(
+              bottomBar: GlassTabBar.bottom(
                 selectedIndex: 0,
                 onTabSelected: (_) {},
                 tabs: const [
-                  GlassBottomBarTab(
+                  GlassTab(
                     label: 'Tab 1',
                     icon: Icon(Icons.home),
                   ),
@@ -143,11 +193,11 @@ void main() {
             child: GlassScaffold(
               appBar: const GlassAppBar(title: Text('Title')),
               body: const Text('Body'),
-              bottomBar: GlassBottomBar(
+              bottomBar: GlassTabBar.bottom(
                 selectedIndex: 0,
                 onTabSelected: (_) {},
                 tabs: const [
-                  GlassBottomBarTab(
+                  GlassTab(
                     label: 'Tab 1',
                     icon: Icon(Icons.home),
                   ),
@@ -350,11 +400,11 @@ void main() {
             settings: defaultTestGlassSettings,
             child: GlassScaffold(
               body: const SizedBox.expand(),
-              bottomBar: GlassBottomBar(
+              bottomBar: GlassTabBar.bottom(
                 selectedIndex: 0,
                 onTabSelected: (_) {},
                 tabs: const [
-                  GlassBottomBarTab(label: 'Home', icon: Icon(Icons.home)),
+                  GlassTab(label: 'Home', icon: Icon(Icons.home)),
                 ],
               ),
             ),
@@ -412,11 +462,11 @@ void main() {
             child: GlassScaffold(
               contentAwareBrightness: true,
               body: const Text('Body'),
-              bottomBar: GlassBottomBar(
+              bottomBar: GlassTabBar.bottom(
                 selectedIndex: 0,
                 onTabSelected: (_) {},
                 tabs: const [
-                  GlassBottomBarTab(label: 'Home', icon: Icon(Icons.home)),
+                  GlassTab(label: 'Home', icon: Icon(Icons.home)),
                 ],
               ),
             ),
@@ -436,11 +486,11 @@ void main() {
             settings: defaultTestGlassSettings,
             child: GlassScaffold(
               body: const Text('Body'),
-              bottomBar: GlassBottomBar(
+              bottomBar: GlassTabBar.bottom(
                 selectedIndex: 0,
                 onTabSelected: (_) {},
                 tabs: const [
-                  GlassBottomBarTab(label: 'Home', icon: Icon(Icons.home)),
+                  GlassTab(label: 'Home', icon: Icon(Icons.home)),
                 ],
               ),
             ),
@@ -451,6 +501,116 @@ void main() {
       expect(find.byType(GlassContentAwareScope), findsNothing);
       expect(find.byType(GlassContentAwareContent), findsNothing);
       expect(find.text('Body'), findsOneWidget);
+    });
+
+    // ── Dark-mode gradient flash regression (fix: fadeColor + transparent scaffold) ──
+
+    testWidgets(
+        'passes backgroundColor to GlassScrollEdgeEffect.fadeColor '
+        'so fallback gradient uses correct colour in dark mode',
+        (tester) async {
+      // Regression test for: GlassTabBar gradient flickering dark when
+      // GlassScaffold(backgroundColor: Colors.white) is used in dark mode.
+      // GlassScrollEdgeEffect's async-capture fallback previously defaulted
+      // to CupertinoTheme.scaffoldBackgroundColor (near-black in dark mode).
+      await tester.pumpWidget(
+        createTestApp(
+          child: AdaptiveLiquidGlassLayer(
+            settings: defaultTestGlassSettings,
+            child: const GlassScaffold(
+              backgroundColor: Colors.white,
+              topEdgeFade: true,
+              bottomEdgeFade: true,
+              body: SizedBox.expand(),
+            ),
+          ),
+        ),
+      );
+
+      final scrollEdge = tester.widget<GlassScrollEdgeEffect>(
+        find.byType(GlassScrollEdgeEffect),
+      );
+      // fadeColor must be the explicit white, not null/dark theme default.
+      expect(scrollEdge.fadeColor, Colors.white);
+    });
+
+    testWidgets(
+        'GlassScrollEdgeEffect.fadeColor is null when no backgroundColor set',
+        (tester) async {
+      // When no backgroundColor is provided, fadeColor should be null so
+      // GlassScrollEdgeEffect falls back to the theme default (existing behaviour).
+      await tester.pumpWidget(
+        createTestApp(
+          child: AdaptiveLiquidGlassLayer(
+            settings: defaultTestGlassSettings,
+            child: const GlassScaffold(
+              topEdgeFade: true,
+              body: SizedBox.expand(),
+            ),
+          ),
+        ),
+      );
+
+      final scrollEdge = tester.widget<GlassScrollEdgeEffect>(
+        find.byType(GlassScrollEdgeEffect),
+      );
+      expect(scrollEdge.fadeColor, isNull);
+    });
+
+    testWidgets(
+        'inner CupertinoPageScaffold is always transparent '
+        'regardless of background or backgroundColor', (tester) async {
+      // Regression test: Scaffold.backgroundColor was conditionally null when
+      // only backgroundColor (not background widget) was provided, causing the
+      // Material dark-mode theme colour to bleed through and corrupt glass
+      // bar backdrop captures. Now uses CupertinoPageScaffold.
+      await tester.pumpWidget(
+        createTestApp(
+          child: AdaptiveLiquidGlassLayer(
+            settings: defaultTestGlassSettings,
+            child: const GlassScaffold(
+              backgroundColor: Colors.white,
+              body: Text('Body'),
+            ),
+          ),
+        ),
+      );
+
+      // Find the inner CupertinoPageScaffold inside GlassScaffold.
+      final scaffold = tester.widget<CupertinoPageScaffold>(
+        find.descendant(
+          of: find.byType(GlassScaffold),
+          matching: find.byType(CupertinoPageScaffold),
+        ),
+      );
+      expect(scaffold.backgroundColor, const Color(0x00000000));
+    });
+
+    testWidgets(
+        'inner CupertinoPageScaffold uses CupertinoTheme background with no background set',
+        (tester) async {
+      await tester.pumpWidget(
+        createTestApp(
+          child: AdaptiveLiquidGlassLayer(
+            settings: defaultTestGlassSettings,
+            child: const GlassScaffold(
+              body: Text('Body'),
+            ),
+          ),
+        ),
+      );
+
+      final scaffold = tester.widget<CupertinoPageScaffold>(
+        find.descendant(
+          of: find.byType(GlassScaffold),
+          matching: find.byType(CupertinoPageScaffold),
+        ),
+      );
+      // Without a background widget the CupertinoPageScaffold must NOT be
+      // forced transparent — null lets it use the CupertinoTheme default (opaque)
+      // to prevent the underlying route bleeding through during route transitions
+      // (issue #177). Mirrors prior Scaffold(backgroundColor: null) behaviour.
+      expect(scaffold.backgroundColor, isNull);
     });
   });
 }

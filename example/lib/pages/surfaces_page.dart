@@ -2,7 +2,6 @@ import 'package:liquid_glass_widgets_example/constants/glass_settings.dart';
 
 import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 
 class SurfacesPage extends StatelessWidget {
   const SurfacesPage({super.key});
@@ -15,18 +14,8 @@ class SurfacesPage extends StatelessWidget {
       statusBarStyle: CupertinoTheme.of(context).brightness == Brightness.dark
           ? GlassStatusBarStyle.light
           : GlassStatusBarStyle.dark,
-      child: Scaffold(
-        extendBodyBehindAppBar: true,
-        appBar: GlassAppBar(
-          leading: GlassButton(
-            quality: GlassQuality.premium,
-            icon: Icon(CupertinoIcons.back),
-            onTap: () => Navigator.of(context).pop(),
-            width: 40,
-            height: 40,
-            iconSize: 20,
-          ),
-        ),
+      child: GlassScaffold(
+        appBar: const GlassAppBar.pinned(),
         body: GlassScrollEdgeEffect(
           topFadeHeight: MediaQuery.paddingOf(context).top + 44 + 40,
           fadeBottom: false,
@@ -55,7 +44,7 @@ class SurfacesPage extends StatelessWidget {
               ),
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.all(24.0),
+                  padding: EdgeInsets.all(24.0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -91,9 +80,9 @@ class SurfacesPage extends StatelessWidget {
                         title: 'Launch Bottom Bar Demo',
                         subtitle: 'Full-screen interactive experience',
                         icon: CupertinoIcons.rectangle_dock,
-                        glowColor: Colors.blue,
+                        glowColor: CupertinoColors.activeBlue,
                         onTap: () => Navigator.of(context).push(
-                          MaterialPageRoute<void>(
+                          CupertinoPageRoute<void>(
                             builder: (_) => const _BottomBarDemoPage(),
                           ),
                         ),
@@ -118,9 +107,9 @@ class SurfacesPage extends StatelessWidget {
                         title: 'Launch Searchable Bar Demo',
                         subtitle: 'Full-screen with search interaction',
                         icon: CupertinoIcons.search,
-                        glowColor: Colors.purple,
+                        glowColor: CupertinoColors.systemPurple,
                         onTap: () => Navigator.of(context).push(
-                          MaterialPageRoute<void>(
+                          CupertinoPageRoute<void>(
                             builder: (_) => const _SearchableBarDemoPage(),
                           ),
                         ),
@@ -203,7 +192,7 @@ class SurfacesPage extends StatelessWidget {
                           ),
                           const Spacer(),
                           GlassButton(
-                            icon: Icon(CupertinoIcons.delete),
+                            icon: Icon(CupertinoIcons.trash),
                             onTap: () {},
                             label: 'Delete',
                             width: 44,
@@ -278,7 +267,7 @@ class _BottomBarDemoPageState extends State<_BottomBarDemoPage> {
       statusBarStyle: CupertinoTheme.of(context).brightness == Brightness.dark
           ? GlassStatusBarStyle.light
           : GlassStatusBarStyle.dark,
-      child: Scaffold(
+      child: GlassScaffold(
         extendBody: true,
         body: SafeArea(
           bottom: false,
@@ -286,7 +275,7 @@ class _BottomBarDemoPageState extends State<_BottomBarDemoPage> {
             slivers: [
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
+                  padding: EdgeInsets.fromLTRB(24, 16, 24, 0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -319,7 +308,7 @@ class _BottomBarDemoPageState extends State<_BottomBarDemoPage> {
                 ),
               ),
               SliverPadding(
-                padding: const EdgeInsets.fromLTRB(24, 24, 24, 120),
+                padding: EdgeInsets.fromLTRB(24, 24, 24, 120),
                 sliver: SliverList(
                   delegate: SliverChildBuilderDelegate(
                     (context, index) => _ContentRow(
@@ -333,7 +322,7 @@ class _BottomBarDemoPageState extends State<_BottomBarDemoPage> {
             ],
           ),
         ),
-        bottomNavigationBar: GlassTabBar.bottom(
+        bottomBar: GlassTabBar.bottom(
           selectedIndex: _selectedIndex,
           onTabSelected: (i) => setState(() => _selectedIndex = i),
           quality: GlassQuality.premium,
@@ -405,7 +394,7 @@ class _SearchableBarDemoPageState extends State<_SearchableBarDemoPage> {
       statusBarStyle: CupertinoTheme.of(context).brightness == Brightness.dark
           ? GlassStatusBarStyle.light
           : GlassStatusBarStyle.dark,
-      child: Scaffold(
+      child: GlassScaffold(
         extendBody: true,
         resizeToAvoidBottomInset: false,
         body: Stack(
@@ -449,7 +438,7 @@ class _SearchableBarDemoPageState extends State<_SearchableBarDemoPage> {
                       slivers: [
                         SliverToBoxAdapter(
                           child: Padding(
-                            padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
+                            padding: EdgeInsets.fromLTRB(24, 16, 24, 0),
                             child: Row(
                               children: [
                                 GlassButton(
@@ -477,7 +466,7 @@ class _SearchableBarDemoPageState extends State<_SearchableBarDemoPage> {
                           ),
                         ),
                         SliverPadding(
-                          padding: const EdgeInsets.fromLTRB(24, 24, 24, 140),
+                          padding: EdgeInsets.fromLTRB(24, 24, 24, 140),
                           sliver: SliverList(
                             delegate: SliverChildBuilderDelegate(
                               (context, index) => _ContentRow(
@@ -589,7 +578,7 @@ class _ContentRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: EdgeInsets.only(bottom: 12),
       height: 64,
       decoration: BoxDecoration(
         color:
@@ -673,7 +662,7 @@ class _DemoLauncher extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: GlassCard(
-        padding: const EdgeInsets.all(20),
+        padding: EdgeInsets.all(20),
         child: Row(
           children: [
             Container(
@@ -853,10 +842,10 @@ class _TabBarIconExampleState extends State<_TabBarIconExample> {
   Widget build(BuildContext context) {
     return GlassSegmentedControl(
       segments: [
-        GlassSegment(icon: Icon(Icons.home)),
-        GlassSegment(icon: Icon(Icons.search)),
-        GlassSegment(icon: Icon(Icons.notifications)),
-        GlassSegment(icon: Icon(Icons.settings)),
+        GlassSegment(icon: Icon(CupertinoIcons.home)),
+        GlassSegment(icon: Icon(CupertinoIcons.search)),
+        GlassSegment(icon: Icon(CupertinoIcons.bell)),
+        GlassSegment(icon: Icon(CupertinoIcons.settings)),
       ],
       selectedIndex: _selectedIndex,
       onSegmentSelected: (index) => setState(() => _selectedIndex = index),

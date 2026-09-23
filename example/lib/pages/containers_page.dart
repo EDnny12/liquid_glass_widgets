@@ -15,18 +15,8 @@ class ContainersPage extends StatelessWidget {
       statusBarStyle: CupertinoTheme.of(context).brightness == Brightness.dark
           ? GlassStatusBarStyle.light
           : GlassStatusBarStyle.dark,
-      child: Scaffold(
-        extendBodyBehindAppBar: true,
-        appBar: GlassAppBar(
-          leading: GlassButton(
-            quality: GlassQuality.premium,
-            icon: Icon(CupertinoIcons.back),
-            onTap: () => Navigator.of(context).pop(),
-            width: 40,
-            height: 40,
-            iconSize: 20,
-          ),
-        ),
+      child: GlassScaffold(
+        appBar: const GlassAppBar.pinned(),
         body: Material(
           type: MaterialType.transparency,
           child: GlassScrollEdgeEffect(
@@ -57,7 +47,7 @@ class ContainersPage extends StatelessWidget {
                 ),
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.all(24.0),
+                    padding: EdgeInsets.all(24.0),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -65,7 +55,7 @@ class ContainersPage extends StatelessWidget {
                         const _SectionTitle(title: 'GlassContainer'),
                         SizedBox(height: 16),
                         GlassContainer(
-                          padding: const EdgeInsets.all(20),
+                          padding: EdgeInsets.all(20),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -96,14 +86,15 @@ class ContainersPage extends StatelessWidget {
                           children: [
                             Expanded(
                               child: GlassContainer(
-                                padding: const EdgeInsets.all(16),
+                                padding: EdgeInsets.all(16),
                                 shape: const LiquidRoundedSuperellipse(
                                   borderRadius: 20,
                                 ),
                                 child: Column(
                                   children: [
                                     Icon(CupertinoIcons.cube_box,
-                                        color: Colors.blue, size: 32),
+                                        color: CupertinoColors.activeBlue,
+                                        size: 32),
                                     SizedBox(height: 8),
                                     Text(
                                       'Superellipse',
@@ -149,14 +140,14 @@ class ContainersPage extends StatelessWidget {
                               Row(
                                 children: [
                                   Container(
-                                    padding: const EdgeInsets.all(8),
+                                    padding: EdgeInsets.all(8),
                                     decoration: BoxDecoration(
-                                      color:
-                                          Colors.purple.withValues(alpha: 0.3),
+                                      color: CupertinoColors.systemPurple
+                                          .withValues(alpha: 0.3),
                                       borderRadius: BorderRadius.circular(8),
                                     ),
                                     child: Icon(CupertinoIcons.rectangle_stack,
-                                        color: Colors.purple),
+                                        color: CupertinoColors.systemPurple),
                                   ),
                                   SizedBox(width: 12),
                                   Expanded(
@@ -194,17 +185,17 @@ class ContainersPage extends StatelessWidget {
                           children: [
                             _MiniCard(
                                 icon: CupertinoIcons.heart_fill,
-                                color: Colors.red,
+                                color: CupertinoColors.systemRed,
                                 label: 'Favorites'),
                             SizedBox(width: 12),
                             _MiniCard(
                                 icon: CupertinoIcons.star_fill,
-                                color: Colors.amber,
+                                color: CupertinoColors.activeOrange,
                                 label: 'Starred'),
                             SizedBox(width: 12),
                             _MiniCard(
                                 icon: CupertinoIcons.bookmark_fill,
-                                color: Colors.green,
+                                color: CupertinoColors.activeGreen,
                                 label: 'Saved'),
                           ],
                         ),
@@ -215,7 +206,7 @@ class ContainersPage extends StatelessWidget {
                         const _SectionTitle(title: 'GlassDivider'),
                         SizedBox(height: 16),
                         GlassCard(
-                          padding: const EdgeInsets.symmetric(
+                          padding: EdgeInsets.symmetric(
                               horizontal: 16, vertical: 12),
                           child: SizedBox(
                             height: 60,
@@ -224,17 +215,17 @@ class ContainersPage extends StatelessWidget {
                               children: [
                                 Text('Left',
                                     style: TextStyle(
-                                        color: Colors.white
+                                        color: CupertinoColors.white
                                             .withValues(alpha: 0.8))),
                                 const GlassDivider.vertical(),
                                 Text('Center',
                                     style: TextStyle(
-                                        color: Colors.white
+                                        color: CupertinoColors.white
                                             .withValues(alpha: 0.8))),
                                 const GlassDivider.vertical(),
                                 Text('Right',
                                     style: TextStyle(
-                                        color: Colors.white
+                                        color: CupertinoColors.white
                                             .withValues(alpha: 0.8))),
                               ],
                             ),
@@ -252,14 +243,14 @@ class ContainersPage extends StatelessWidget {
                             children: [
                               GlassListTile(
                                 leading: Icon(CupertinoIcons.person_fill,
-                                    color: Colors.blue),
+                                    color: CupertinoColors.activeBlue),
                                 title: Text('Account'),
                                 trailing: GlassListTile.chevron,
                                 onTap: () {},
                               ),
                               GlassListTile(
                                 leading: Icon(CupertinoIcons.bell_fill,
-                                    color: Colors.orange),
+                                    color: CupertinoColors.activeOrange),
                                 title: Text('Notifications'),
                                 subtitle: Text('Banners, sounds, badges'),
                                 trailing: GlassListTile.chevron,
@@ -267,14 +258,14 @@ class ContainersPage extends StatelessWidget {
                               ),
                               GlassListTile(
                                 leading: Icon(CupertinoIcons.lock_fill,
-                                    color: Colors.green),
+                                    color: CupertinoColors.activeGreen),
                                 title: Text('Privacy & Security'),
                                 trailing: GlassListTile.chevron,
                                 onTap: () {},
                               ),
                               GlassListTile(
                                 leading: Icon(CupertinoIcons.paintbrush_fill,
-                                    color: Colors.purple),
+                                    color: CupertinoColors.systemPurple),
                                 title: Text('Appearance'),
                                 subtitle: Text('Dark mode, accent colour'),
                                 trailing: GlassListTile.chevron,
@@ -301,7 +292,7 @@ class ContainersPage extends StatelessWidget {
                         SizedBox(height: 16),
                         GlassGroupedSection(
                           header: Padding(
-                            padding: const EdgeInsets.only(left: 16, bottom: 8),
+                            padding: EdgeInsets.only(left: 16, bottom: 8),
                             child: Text(
                               'NETWORK',
                               style: TextStyle(
@@ -316,8 +307,8 @@ class ContainersPage extends StatelessWidget {
                           ),
                           children: [
                             GlassListTile(
-                              leading:
-                                  Icon(CupertinoIcons.wifi, color: Colors.blue),
+                              leading: Icon(CupertinoIcons.wifi,
+                                  color: CupertinoColors.activeBlue),
                               title: Text('Wi-Fi'),
                               subtitle: Text('Connected'),
                               trailing: GlassListTile.chevron,
@@ -325,7 +316,8 @@ class ContainersPage extends StatelessWidget {
                             ),
                             GlassListTile(
                               leading: Icon(CupertinoIcons.bluetooth,
-                                  color: Colors.blue.shade300),
+                                  color: CupertinoColors.activeBlue
+                                      .withValues(alpha: 0.7)),
                               title: Text('Bluetooth'),
                               subtitle: Text('On'),
                               trailing: GlassListTile.chevron,
@@ -334,7 +326,7 @@ class ContainersPage extends StatelessWidget {
                             GlassListTile(
                               leading: Icon(
                                   CupertinoIcons.antenna_radiowaves_left_right,
-                                  color: Colors.green),
+                                  color: CupertinoColors.activeGreen),
                               title: Text('VPN'),
                               trailing: GlassListTile.chevron,
                               onTap: () {},
@@ -345,7 +337,7 @@ class ContainersPage extends StatelessWidget {
                         SizedBox(height: 16),
                         GlassGroupedSection(
                           header: Padding(
-                            padding: const EdgeInsets.only(left: 16, bottom: 8),
+                            padding: EdgeInsets.only(left: 16, bottom: 8),
                             child: Text(
                               'DISPLAY',
                               style: TextStyle(
@@ -359,7 +351,7 @@ class ContainersPage extends StatelessWidget {
                             ),
                           ),
                           footer: Padding(
-                            padding: const EdgeInsets.only(left: 16, top: 8),
+                            padding: EdgeInsets.only(left: 16, top: 8),
                             child: Text(
                               'Adjusts the colour temperature of your display.',
                               style: TextStyle(
@@ -373,7 +365,7 @@ class ContainersPage extends StatelessWidget {
                           children: [
                             GlassListTile(
                               leading: Icon(CupertinoIcons.brightness,
-                                  color: Colors.orange),
+                                  color: CupertinoColors.activeOrange),
                               title: Text('Brightness'),
                               trailing: GlassListTile.chevron,
                               onTap: () {},
@@ -444,7 +436,7 @@ class _MiniCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Expanded(
       child: GlassCard(
-        padding: const EdgeInsets.all(12),
+        padding: EdgeInsets.all(12),
         child: Column(
           children: [
             Icon(icon, color: color, size: 24),
@@ -559,8 +551,10 @@ class _StepperDemoState extends State<_StepperDemo> {
                     mainAxisSize: MainAxisSize.min,
                     children: List.generate(5, (i) {
                       return Icon(
-                        i < _rating ? Icons.star : Icons.star_border,
-                        color: i < _rating ? Colors.amber : Colors.white38,
+                        i < _rating ? CupertinoIcons.star : CupertinoIcons.star,
+                        color: i < _rating
+                            ? CupertinoColors.activeOrange
+                            : CupertinoColors.white.withValues(alpha: 0.38),
                         size: 18,
                       );
                     }),

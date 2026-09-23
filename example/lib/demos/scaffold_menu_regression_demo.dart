@@ -1,5 +1,5 @@
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
+
 import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 
 /// Developer Regression Reference — GlassScaffold + GlassMenu (0.14.x)
@@ -9,7 +9,7 @@ import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 ///
 /// **Issue 1 — GlassScaffold black background (FIXED in 0.14.x)**
 /// When no `background:` widget is supplied, the inner Scaffold was forced to
-/// `Colors.transparent`, rendering black instead of `Theme.scaffoldBackgroundColor`.
+/// `const Color(0x00000000)`, rendering black instead of `Theme.scaffoldBackgroundColor`.
 /// Fixed by: adding `backgroundColor: Color?` param and only forcing transparent
 /// when `background != null`.
 ///
@@ -35,11 +35,10 @@ class ScaffoldMenuRegressionDemo extends StatelessWidget {
     return GlassPage(
       background: _buildBackground(),
       statusBarStyle: GlassStatusBarStyle.light,
-      child: Scaffold(
-        extendBodyBehindAppBar: true,
+      child: GlassScaffold(
         appBar: GlassAppBar(
           leading: GlassButton(
-            icon: const Icon(CupertinoIcons.back),
+            icon: Icon(CupertinoIcons.back),
             onTap: () => Navigator.of(context).pop(),
             width: 40,
             height: 40,
@@ -60,7 +59,7 @@ class ScaffoldMenuRegressionDemo extends StatelessWidget {
               style: TextStyle(
                 fontSize: 34,
                 fontWeight: FontWeight.w700,
-                color: Colors.white,
+                color: CupertinoColors.white,
                 letterSpacing: -0.5,
               ),
             ),
@@ -69,7 +68,7 @@ class ScaffoldMenuRegressionDemo extends StatelessWidget {
               'GlassScaffold + GlassMenu — 0.14.x investigations',
               style: TextStyle(
                 fontSize: 15,
-                color: Colors.white60,
+                color: Color(0x99FFFFFF),
               ),
             ),
             SizedBox(height: 32),
@@ -135,18 +134,18 @@ class _ScaffoldBugDemo extends StatelessWidget {
           ),
           width: double.infinity,
           height: 48,
-          shape: const LiquidRoundedSuperellipse(borderRadius: 12),
-          glowColor: Colors.green.withValues(alpha: 0.3),
-          child: const Text(
+          shape: LiquidRoundedSuperellipse(borderRadius: 12),
+          glowColor: CupertinoColors.activeGreen.withValues(alpha: 0.3),
+          child: Text(
             'Open GlassScaffold page (backgroundColor: fixed ✓)',
             style: TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.w600,
-              color: Colors.white,
+              color: CupertinoColors.white,
             ),
           ),
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: 8),
         _InfoLabel(
           text: 'backgroundColor: Color(0xFF020715) — deep navy via new param.',
         ),
@@ -165,37 +164,38 @@ class _GlassScaffoldBugPage extends StatelessWidget {
       backgroundColor: const Color(0xFF020715),
       appBar: GlassAppBar(
         leading: GlassButton(
-          icon: const Icon(CupertinoIcons.back),
+          icon: Icon(CupertinoIcons.back),
           onTap: () => Navigator.of(context).pop(),
           width: 40,
           height: 40,
           iconSize: 20,
         ),
-        title: const Text(
+        title: Text(
           'GlassScaffold — backgroundColor:',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+          style: TextStyle(
+              color: CupertinoColors.white, fontWeight: FontWeight.w600),
         ),
       ),
       body: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(CupertinoIcons.checkmark_seal_fill,
-                color: Colors.green, size: 48),
-            const SizedBox(height: 16),
-            const Text(
+            Icon(CupertinoIcons.checkmark_seal_fill,
+                color: CupertinoColors.activeGreen, size: 48),
+            SizedBox(height: 16),
+            Text(
               'FIXED ✓',
               style: TextStyle(
-                color: Colors.green,
+                color: CupertinoColors.activeGreen,
                 fontSize: 22,
                 fontWeight: FontWeight.w700,
               ),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8),
             Text(
               'Deep navy (#020715) via backgroundColor: param.',
               style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.6),
+                color: CupertinoColors.white.withValues(alpha: 0.6),
                 fontSize: 14,
                 height: 1.6,
               ),
@@ -228,18 +228,18 @@ class _MenuInScaffoldDemo extends StatelessWidget {
           ),
           width: double.infinity,
           height: 48,
-          shape: const LiquidRoundedSuperellipse(borderRadius: 12),
-          glowColor: Colors.orange.withValues(alpha: 0.3),
-          child: const Text(
+          shape: LiquidRoundedSuperellipse(borderRadius: 12),
+          glowColor: CupertinoColors.activeOrange.withValues(alpha: 0.3),
+          child: Text(
             'Open GlassScaffold + GlassMenu test page',
             style: TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.w600,
-              color: Colors.white,
+              color: CupertinoColors.white,
             ),
           ),
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: 8),
         _InfoLabel(
           text:
               'CONCLUSION: Not a regression. The glass frost effect correctly '
@@ -271,22 +271,23 @@ class _GlassMenuInScaffoldPage extends StatelessWidget {
       // This is correct 0.14.x behaviour, not a regression.
       appBar: GlassAppBar(
         leading: GlassButton(
-          icon: const Icon(CupertinoIcons.back),
+          icon: Icon(CupertinoIcons.back),
           onTap: () => Navigator.of(context).pop(),
           width: 40,
           height: 40,
           iconSize: 20,
         ),
-        title: const Text(
+        title: Text(
           'GlassMenu + GlassScaffold',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+          style: TextStyle(
+              color: CupertinoColors.white, fontWeight: FontWeight.w600),
         ),
         actions: [
           GlassMenu(
             menuWidth: 220,
             autoAdjustToScreen: true,
             triggerBuilder: (context, toggle) => GlassButton(
-              icon: const Icon(CupertinoIcons.ellipsis_circle),
+              icon: Icon(CupertinoIcons.ellipsis_circle),
               onTap: toggle,
               width: 40,
               height: 40,
@@ -294,17 +295,17 @@ class _GlassMenuInScaffoldPage extends StatelessWidget {
             ),
             items: [
               GlassMenuItem(
-                icon: const Icon(CupertinoIcons.share),
+                icon: Icon(CupertinoIcons.share),
                 title: 'Share',
                 onTap: () {},
               ),
               GlassMenuItem(
-                icon: const Icon(CupertinoIcons.pencil),
+                icon: Icon(CupertinoIcons.pencil),
                 title: 'Edit',
                 onTap: () {},
               ),
               GlassMenuItem(
-                icon: const Icon(CupertinoIcons.trash),
+                icon: Icon(CupertinoIcons.trash),
                 title: 'Delete',
                 isDestructive: true,
                 onTap: () {},
@@ -314,9 +315,9 @@ class _GlassMenuInScaffoldPage extends StatelessWidget {
         ],
       ),
       body: ListView(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         children: [
-          const Text(
+          Text(
             'Menu A — app bar (GlassIsolationScope).\n'
             'Menu B — body (no isolation scope).\n'
             'Open both menus and observe: GlassButtons show through the '
@@ -325,42 +326,42 @@ class _GlassMenuInScaffoldPage extends StatelessWidget {
             'The 0.13.x behaviour (buttons invisible) was a side-effect of '
             'the old shared BackdropGroup architecture.',
             style: TextStyle(
-              color: Colors.white70,
+              color: CupertinoColors.white.withValues(alpha: 0.70),
               fontSize: 14,
               height: 1.6,
             ),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
           // ── Menu B — body-level, NO GlassIsolationScope ──────────────
           Row(
             children: [
-              const Expanded(
+              Expanded(
                 child: Text(
                   'Menu B (body — no isolation):',
-                  style: TextStyle(color: Colors.white60, fontSize: 13),
+                  style: TextStyle(color: Color(0x99FFFFFF), fontSize: 13),
                 ),
               ),
               GlassMenu(
                 menuWidth: 220,
                 autoAdjustToScreen: true,
                 triggerBuilder: (context, toggle) => GlassButton(
-                  icon: const Icon(CupertinoIcons.ellipsis_circle_fill),
+                  icon: Icon(CupertinoIcons.ellipsis_circle_fill),
                   label: 'Open Menu B',
                   onTap: toggle,
                 ),
                 items: [
                   GlassMenuItem(
-                    icon: const Icon(CupertinoIcons.share),
+                    icon: Icon(CupertinoIcons.share),
                     title: 'Share',
                     onTap: () {},
                   ),
                   GlassMenuItem(
-                    icon: const Icon(CupertinoIcons.pencil),
+                    icon: Icon(CupertinoIcons.pencil),
                     title: 'Edit',
                     onTap: () {},
                   ),
                   GlassMenuItem(
-                    icon: const Icon(CupertinoIcons.trash),
+                    icon: Icon(CupertinoIcons.trash),
                     title: 'Delete',
                     isDestructive: true,
                     onTap: () {},
@@ -369,22 +370,22 @@ class _GlassMenuInScaffoldPage extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 24),
+          SizedBox(height: 24),
           ...List.generate(
             6,
             (i) => Padding(
-              padding: const EdgeInsets.only(bottom: 12),
+              padding: EdgeInsets.only(bottom: 12),
               child: GlassButton.custom(
                 onTap: () {},
                 width: double.infinity,
                 height: 52,
-                shape: const LiquidRoundedSuperellipse(borderRadius: 14),
-                glowColor: Colors.orange.withValues(alpha: 0.35),
+                shape: LiquidRoundedSuperellipse(borderRadius: 14),
+                glowColor: CupertinoColors.activeOrange.withValues(alpha: 0.35),
                 child: Text(
                   'GlassButton ${i + 1}  ← should be hidden when menu open',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 13,
-                    color: Colors.white,
+                    color: CupertinoColors.white,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -421,42 +422,42 @@ class _BugSection extends StatelessWidget {
           width: 28,
           height: 28,
           decoration: BoxDecoration(
-            color: Colors.orange.withValues(alpha: 0.15),
+            color: CupertinoColors.activeOrange.withValues(alpha: 0.15),
             borderRadius: BorderRadius.circular(8),
             border: Border.all(
-              color: Colors.orange.withValues(alpha: 0.4),
+              color: CupertinoColors.activeOrange.withValues(alpha: 0.4),
             ),
           ),
           child: Center(
             child: Text(
               number,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.bold,
-                color: Colors.orange,
+                color: CupertinoColors.activeOrange,
               ),
             ),
           ),
         ),
-        const SizedBox(width: 12),
+        SizedBox(width: 12),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 title,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 17,
                   fontWeight: FontWeight.w600,
-                  color: Colors.white,
+                  color: CupertinoColors.white,
                 ),
               ),
-              const SizedBox(height: 4),
+              SizedBox(height: 4),
               Text(
                 description,
                 style: TextStyle(
                   fontSize: 13,
-                  color: Colors.white.withValues(alpha: 0.55),
+                  color: CupertinoColors.white.withValues(alpha: 0.55),
                   height: 1.5,
                 ),
               ),
@@ -475,22 +476,23 @@ class _InfoLabel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
+        color: CupertinoColors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
+        border:
+            Border.all(color: CupertinoColors.white.withValues(alpha: 0.12)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('ℹ️ ', style: TextStyle(fontSize: 13)),
+          Text('ℹ️ ', style: TextStyle(fontSize: 13)),
           Expanded(
             child: Text(
               text,
               style: TextStyle(
                 fontSize: 12,
-                color: Colors.white.withValues(alpha: 0.6),
+                color: CupertinoColors.white.withValues(alpha: 0.6),
                 height: 1.5,
               ),
             ),
@@ -522,7 +524,7 @@ Widget _buildBackground() {
                 colors: [
                   const Color(0xFFA246F7).withValues(alpha: 0.32),
                   const Color(0xFF9B59FF).withValues(alpha: 0.1),
-                  Colors.transparent,
+                  const Color(0x00000000),
                 ],
                 stops: const [0.0, 0.5, 1.0],
               ),
@@ -540,7 +542,7 @@ Widget _buildBackground() {
               gradient: RadialGradient(
                 colors: [
                   const Color(0xFFEB66FF).withValues(alpha: 0.16),
-                  Colors.transparent,
+                  const Color(0x00000000),
                 ],
               ),
             ),
@@ -557,7 +559,7 @@ Widget _buildBackground() {
               gradient: RadialGradient(
                 colors: [
                   const Color(0xFF2077FF).withValues(alpha: 0.18),
-                  Colors.transparent,
+                  const Color(0x00000000),
                 ],
               ),
             ),

@@ -31,6 +31,7 @@ library;
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+
 import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import 'package:video_player/video_player.dart';
 
@@ -112,9 +113,8 @@ class _VideoGlassDemoPageState extends State<VideoGlassDemoPage> {
       // The video IS the background — but we don't use GlassPage's
       // background parameter because the video is a PlatformView and
       // must be in the widget tree directly (not captured as a texture).
-      child: Scaffold(
+      child: GlassScaffold(
         extendBody: true,
-        extendBodyBehindAppBar: true,
         body: Stack(
           fit: StackFit.expand,
           children: [
@@ -131,23 +131,24 @@ class _VideoGlassDemoPageState extends State<VideoGlassDemoPage> {
                 ),
               )
             else
-              const Center(
-                child: CircularProgressIndicator(color: Colors.white54),
+              Center(
+                child: CircularProgressIndicator(
+                    color: CupertinoColors.white.withValues(alpha: 0.54)),
               ),
 
             // ── Glass overlay controls ─────────────────────────────
             SafeArea(
               child: Padding(
-                padding: const EdgeInsets.all(20),
+                padding: EdgeInsets.all(20),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const SizedBox(height: 8),
+                    SizedBox(height: 8),
 
                     // Title card
                     GlassCard(
                       useOwnLayer: true,
-                      padding: const EdgeInsets.all(16),
+                      padding: EdgeInsets.all(16),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -157,17 +158,18 @@ class _VideoGlassDemoPageState extends State<VideoGlassDemoPage> {
                                 .textTheme
                                 .headlineSmall
                                 ?.copyWith(
-                                  color: Colors.white,
+                                  color: CupertinoColors.white,
                                   fontWeight: FontWeight.bold,
                                 ),
                           ),
-                          const SizedBox(height: 4),
+                          SizedBox(height: 4),
                           Text(
                             'Glass widgets over a video PlatformView.\n'
                             'Verify: no rectangular blur halo at corners.',
                             style:
                                 Theme.of(context).textTheme.bodySmall?.copyWith(
-                                      color: Colors.white70,
+                                      color: CupertinoColors.white
+                                          .withValues(alpha: 0.70),
                                     ),
                           ),
                         ],
@@ -183,7 +185,7 @@ class _VideoGlassDemoPageState extends State<VideoGlassDemoPage> {
                         GlassButton(
                           useOwnLayer: true,
                           quality: GlassQuality.premium,
-                          icon: const Icon(CupertinoIcons.backward_fill),
+                          icon: Icon(CupertinoIcons.backward_fill),
                           onTap: () {
                             final pos = _controller.value.position;
                             _controller.seekTo(
@@ -191,7 +193,7 @@ class _VideoGlassDemoPageState extends State<VideoGlassDemoPage> {
                             );
                           },
                         ),
-                        const SizedBox(width: 16),
+                        SizedBox(width: 16),
                         GlassButton.custom(
                           useOwnLayer: true,
                           quality: GlassQuality.premium,
@@ -203,14 +205,14 @@ class _VideoGlassDemoPageState extends State<VideoGlassDemoPage> {
                                 ? CupertinoIcons.pause_fill
                                 : CupertinoIcons.play_fill,
                             size: 32,
-                            color: Colors.white,
+                            color: CupertinoColors.white,
                           ),
                         ),
-                        const SizedBox(width: 16),
+                        SizedBox(width: 16),
                         GlassButton(
                           useOwnLayer: true,
                           quality: GlassQuality.premium,
-                          icon: const Icon(CupertinoIcons.forward_fill),
+                          icon: Icon(CupertinoIcons.forward_fill),
                           onTap: () {
                             final pos = _controller.value.position;
                             _controller.seekTo(
@@ -221,54 +223,56 @@ class _VideoGlassDemoPageState extends State<VideoGlassDemoPage> {
                       ],
                     ),
 
-                    const SizedBox(height: 16),
+                    SizedBox(height: 16),
 
                     // Progress indicator card
                     if (_controller.value.isInitialized)
                       GlassCard(
                         useOwnLayer: true,
-                        padding: const EdgeInsets.symmetric(
+                        padding: EdgeInsets.symmetric(
                           horizontal: 16,
                           vertical: 12,
                         ),
                         child: VideoProgressIndicator(
                           _controller,
                           allowScrubbing: true,
-                          colors: const VideoProgressColors(
-                            playedColor: Colors.white,
-                            bufferedColor: Colors.white24,
-                            backgroundColor: Colors.white10,
+                          colors: VideoProgressColors(
+                            playedColor: CupertinoColors.white,
+                            bufferedColor:
+                                CupertinoColors.white.withValues(alpha: 0.24),
+                            backgroundColor:
+                                CupertinoColors.white.withValues(alpha: 0.1),
                           ),
                         ),
                       ),
 
-                    const SizedBox(height: 80), // Space for bottom bar
+                    SizedBox(height: 80), // Space for bottom bar
                   ],
                 ),
               ),
             ),
           ],
         ),
-        bottomNavigationBar: GlassTabBar.bottom(
+        bottomBar: GlassTabBar.bottom(
           selectedIndex: _selectedTab,
           onTabSelected: (i) => setState(() => _selectedTab = i),
-          selectedIconColor: Colors.white,
-          unselectedIconColor: Colors.white.withValues(alpha: 0.5),
+          selectedIconColor: CupertinoColors.white,
+          unselectedIconColor: CupertinoColors.white.withValues(alpha: 0.5),
           tabs: [
             GlassTab(
               label: 'Home',
-              icon: const Icon(CupertinoIcons.home),
-              activeIcon: const Icon(CupertinoIcons.home),
+              icon: Icon(CupertinoIcons.home),
+              activeIcon: Icon(CupertinoIcons.home),
             ),
             GlassTab(
               label: 'Browse',
-              icon: const Icon(CupertinoIcons.compass),
-              activeIcon: const Icon(CupertinoIcons.compass_fill),
+              icon: Icon(CupertinoIcons.compass),
+              activeIcon: Icon(CupertinoIcons.compass_fill),
             ),
             GlassTab(
               label: 'Library',
-              icon: const Icon(CupertinoIcons.music_albums),
-              activeIcon: const Icon(CupertinoIcons.music_albums_fill),
+              icon: Icon(CupertinoIcons.music_albums),
+              activeIcon: Icon(CupertinoIcons.music_albums_fill),
             ),
           ],
         ),

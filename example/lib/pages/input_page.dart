@@ -2,7 +2,6 @@ import 'package:liquid_glass_widgets_example/constants/glass_settings.dart';
 
 import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 
 class InputPage extends StatefulWidget {
   const InputPage({super.key});
@@ -36,18 +35,8 @@ class _InputPageState extends State<InputPage> {
       statusBarStyle: CupertinoTheme.of(context).brightness == Brightness.dark
           ? GlassStatusBarStyle.light
           : GlassStatusBarStyle.dark,
-      child: Scaffold(
-        extendBodyBehindAppBar: true,
-        appBar: GlassAppBar(
-          leading: GlassButton(
-            quality: GlassQuality.premium,
-            icon: Icon(CupertinoIcons.back),
-            onTap: () => Navigator.of(context).pop(),
-            width: 40,
-            height: 40,
-            iconSize: 20,
-          ),
-        ),
+      child: GlassScaffold(
+        appBar: const GlassAppBar.pinned(),
         body: GlassScrollEdgeEffect(
           topFadeHeight: MediaQuery.paddingOf(context).top + 44 + 40,
           fadeBottom: false,
@@ -76,7 +65,7 @@ class _InputPageState extends State<InputPage> {
               ),
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.all(24.0),
+                  padding: EdgeInsets.all(24.0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -158,7 +147,7 @@ class _InputPageState extends State<InputPage> {
                           borderRadius: BorderRadius.circular(16),
                         ),
                         child: Padding(
-                          padding: const EdgeInsets.all(24),
+                          padding: EdgeInsets.all(24),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -298,7 +287,7 @@ class _InputPageState extends State<InputPage> {
                           borderRadius: BorderRadius.circular(16),
                         ),
                         child: Padding(
-                          padding: const EdgeInsets.all(24),
+                          padding: EdgeInsets.all(24),
                           child: Column(
                             children: [
                               GlassFormField(

@@ -2,10 +2,10 @@
 
 ## Baseline and scope
 
-- Local baseline: `3ef22e55a2bc0857eaabfc39a2101847330ff249`, package `0.21.1`.
+- Upstream baseline: `4d3f4dfe4e6188a82c200b1e3a4a2645ccb54d12`, package `1.7.2`.
 - Verified with Flutter `3.47.5` / Dart `3.13.4` on macOS.
-- Scope: `GlassBottomBar`, `GlassSearchableBottomBar`, and the corresponding
-  `GlassTabBar` variants. No changes to the package version, dependencies,
+- Scope: the shared indicator in `GlassTabBar.bottom`,
+  `GlassTabBar.searchable`, and `GlassTabBar.minimizable`. No changes to the package version, dependencies,
   global optics, shaders, global spring presets, or public parameters.
 - No devices or emulators were run for this validation.
 
@@ -23,8 +23,8 @@
    quality are separate decisions.
 4. The mask divided the width into tabs before applying 4 px padding. The
    indicator applies padding to the entire bar before dividing it. This
-   produced different widths and transform centers. The mask also used a
-   rounded rectangle instead of the indicator's superellipse.
+   produced different widths and transform centers. Some mask call sites also
+   doubled the radius, unlike the indicator's current rounded rectangle.
 5. The premium background remained outside the transform. It could reappear
    rigid during material retirement.
 6. After a rejected drag or hybrid tap, the visual destination could differ
@@ -49,7 +49,9 @@ then snap exactly to rest and the material retires.
 `IndicatorDeformationScope`, internal and unexported, supplies a single effective
 matrix to the lens and background; the same instance reaches both `JellyClipper`
 objects. The matrix is retained while shape and quality remain unchanged. Each
-representation applies it once around its expanded center. The background and
+representation applies it once around its expanded center. Masks use the same
+rounded rectangle and radius as the indicator, while preserving the upstream
+overdrag guard that keeps edge icons visible. The background and
 its existing blur follow the transform; no additional blur is introduced.
 Consumers outside the bottom bars retain their previous behavior.
 
@@ -82,10 +84,12 @@ including during an active animation.
 
 ## Reproducible validation
 
-Final local results: static analysis reported no issues; **2,125 tests passed,
-including 34 new tests**. Effective coverage: **91.37%** (8,458/9,257 lines,
-excluding the renderer as CI does). Both new internal files have 100% line
-coverage. `git diff --check` also passed. Coverage does not establish visual
+Final local results: **2,889 tests passed, including 36 regression tests for
+this change**. Static analysis reported no issues. Effective line coverage is
+**94.38%** (11,713/12,411 lines, excluding engine/renderer as CI does).
+Formatting and `git diff --check` against the upstream baseline passed.
+`dart doc --dry-run` reported no errors and nine unresolved-reference warnings
+in unchanged upstream files. Coverage does not establish visual
 correctness or measured rendering performance.
 
 The new tests inspect intermediate frames, not just `pumpAndSettle`:
@@ -99,6 +103,7 @@ The new tests inspect intermediate frames, not just `pumpAndSettle`:
   and with the gesture mode used for PlatformViews.
 - Unmounting, hiding, `TickerMode`, Reduce Motion enabled during animation,
   and no additional rebuilds at rest.
+- Version 1.7.2 custom indicator radii and independent background quality.
 
 In the deterministic test of a 400 × 64 px bar with four tabs, the complete
 animation until all tickers stop takes approximately 1.07 s for an adjacent tab
@@ -117,7 +122,7 @@ flutter test --coverage $(rg --files test -g '*_test.dart' \
 ```
 
 The last command selects the same files as CI: it excludes goldens and GPU
-renderer tests. Effective coverage excludes `lib/src/renderer/*`, as CI does;
+renderer tests. Effective coverage excludes `lib/src/engine/*` and `lib/src/renderer/*`, as CI does;
 it does not imply validation of pixels rendered by Impeller.
 
 ## Device comparison still required

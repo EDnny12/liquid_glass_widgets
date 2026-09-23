@@ -1,16 +1,23 @@
-# Build artifacts
+# Build and IDE artifacts
 build/
 .dart_tool/
 .packages
 *.log
 coverage/
+*.iml
+.idea/
 
 # Local working docs
+doc/
 docs/
 .agent/
+AGENTS.md
+CLAUDE.md
+CHANGELOG_ARCHIVE.md
 
 # Test suite — consumers don't need these; tests are on GitHub
 test/
+integration_test/
 
 # Example app platform folders
 example/ios/
@@ -28,13 +35,15 @@ example/showcase/
 example/assets/
 example/**/*.md
 example/lib/
+example/integration_test/
 
-# Tools (internal sync scripts)
+# Tools & internal scripts
 tools/
+scripts/
+modal_sheet_showcase/
 
 # Root-level scratch/debug output and scripts (not for package consumers)
 test_output.txt
 test_output2.log
 update_demo.py
 update_glow.py
-ARCHITECTURE.md

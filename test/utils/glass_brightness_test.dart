@@ -1,15 +1,32 @@
 // Tests for the resolveGlassBrightness utility function.
 //
 // These tests verify the three-level cascade:
-//   Level 1: CupertinoThemeData.brightness explicit pin
-//   Level 2: Material ThemeMode (Theme.maybeBrightnessOf)
-//   Level 3: MediaQuery.platformBrightnessOf (system/device fallback)
+//   Level 1: Theme.maybeBrightnessOf (Material ThemeMode).
+//            - Non-null inside any MaterialApp. Correctly honours
+//              ThemeMode.light / .dark / .system.
+//   Level 2: CupertinoTheme.of(context).brightness
+//            - Non-null only when the developer explicitly sets it via
+//              CupertinoApp(theme:) or a manual CupertinoTheme widget.
+//   Level 3: MediaQuery.platformBrightnessOf (device/OS fallback).
+//            Only reached in a pure CupertinoApp with no explicit pin.
 //
-// GlassThemeData.brightness (level 4/highest) is tested in
+// ⚠ UNIT-TEST LIMITATION
+// The canonical regression scenario — OS Dark Mode + ThemeMode.light causing
+// glass widgets to incorrectly resolve Brightness.dark — does NOT reproduce in
+// the widget-test harness. The Flutter test environment correctly propagates
+// ThemeMode through MaterialBasedCupertinoThemeData regardless of the
+// simulated platformBrightness, so all tests here pass whether or not the
+// Level 2 (Theme.maybeBrightnessOf) cascade step is present.
+//
+// This means: restoring or removing Theme.maybeBrightnessOf cannot be
+// verified by unit tests alone. Before every release, run the manual check
+// documented in MANUAL_TEST_CHECKLIST.md.
+//
+// GlassThemeData.brightness (override) is tested in
 // glass_theme_data_brightness_test.dart and glass_theme_brightness_test.dart.
 
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart'; // test-only: used for MaterialApp host wrappers
 import 'package:flutter_test/flutter_test.dart';
 import 'package:liquid_glass_widgets/utils/glass_brightness.dart';
 
@@ -37,10 +54,10 @@ void main() {
   }
 
   // ──────────────────────────────────────────────────────────────────────────
-  // Level 1: CupertinoTheme explicit pin
+  // Level 2a: CupertinoApp with explicit brightness pin
   // ──────────────────────────────────────────────────────────────────────────
 
-  group('resolveGlassBrightness — Level 1: Cupertino explicit pin', () {
+  group('resolveGlassBrightness — Level 2: CupertinoApp explicit pin', () {
     testWidgets(
         'returns Brightness.light when CupertinoThemeData.brightness is light',
         (tester) async {
@@ -79,10 +96,18 @@ void main() {
   });
 
   // ──────────────────────────────────────────────────────────────────────────
-  // Level 2: Material ThemeMode
+  // Level 1: MaterialApp — resolved via MaterialBasedCupertinoThemeData
+  //
+  // Flutter's MaterialApp automatically wraps the widget tree with a
+  // CupertinoTheme using MaterialBasedCupertinoThemeData, whose .brightness
+  // property is non-nullable and always returns the active ThemeData brightness.
+  // Level 1 therefore handles MaterialApp ThemeMode correctly without any
+  // direct Material API access.
   // ──────────────────────────────────────────────────────────────────────────
 
-  group('resolveGlassBrightness — Level 2: Material ThemeMode', () {
+  group(
+      'resolveGlassBrightness — Level 1: MaterialApp ThemeMode (via MaterialBasedCupertinoThemeData)',
+      () {
     testWidgets(
         'returns Brightness.light for ThemeMode.light when device is dark',
         (tester) async {
@@ -161,7 +186,7 @@ void main() {
   });
 
   // ──────────────────────────────────────────────────────────────────────────
-  // Level 3: System / device fallback (no Cupertino pin, no Material ancestor)
+  // Level 3: System / device fallback (CupertinoApp, no explicit pin)
   // ──────────────────────────────────────────────────────────────────────────
 
   group('resolveGlassBrightness — Level 3: device system fallback', () {
@@ -198,15 +223,18 @@ void main() {
   });
 
   // ──────────────────────────────────────────────────────────────────────────
-  // Priority order: Level 1 beats Level 2 beats Level 3
+  // Priority order: CupertinoApp pin > MaterialApp ThemeMode > system
   // ──────────────────────────────────────────────────────────────────────────
 
   group('resolveGlassBrightness — cascade priority order', () {
-    testWidgets(
-        'Cupertino pin (L1) beats Material ThemeMode (L2) beats system (L3)',
+    testWidgets('CupertinoTheme explicit pin beats MaterialApp ThemeMode',
         (tester) async {
-      // All three disagree: device dark, Material light, Cupertino dark.
-      // Expected: Cupertino wins (dark).
+      // All three disagree: device dark, Material ThemeMode light, Cupertino dark.
+      // Expected: explicit CupertinoThemeData pin wins (dark).
+      //
+      // Mechanism: an explicit CupertinoTheme ancestor with a true
+      // CupertinoThemeData (not MaterialBasedCupertinoThemeData) returns a
+      // non-null .brightness, so Level 1 returns it immediately.
       final result = await pumpAndCapture(
         tester,
         (child) => MediaQuery(
@@ -223,13 +251,14 @@ void main() {
           ),
         ),
       );
-      // Cupertino (Level 1) wins over Material (Level 2)
       expect(result, Brightness.dark,
-          reason: 'Cupertino pin is Level 1 — wins over Material ThemeMode');
+          reason:
+              'Explicit CupertinoThemeData.brightness wins over Material ThemeMode');
     });
 
-    testWidgets('Material ThemeMode (L2) beats system (L3)', (tester) async {
-      // Device dark, no Cupertino pin, but Material is ThemeMode.light.
+    testWidgets('MaterialApp ThemeMode beats system device brightness',
+        (tester) async {
+      // Device dark, no explicit Cupertino pin, but Material is ThemeMode.light.
       final result = await pumpAndCapture(
         tester,
         (child) => MediaQuery(
@@ -246,4 +275,11 @@ void main() {
           reason: 'Material ThemeMode.light wins over dark device OS setting');
     });
   });
+
+  // NOTE: The canonical on-device regression (OS Dark + ThemeMode.light →
+  // glass widgets incorrectly dark) cannot be reproduced here. The widget-test
+  // harness propagates ThemeMode correctly through MaterialBasedCupertinoThemeData
+  // regardless of platformBrightness, so a test covering that scenario would
+  // pass even with the Level 2 cascade step removed — giving false confidence.
+  // See MANUAL_TEST_CHECKLIST.md for the required pre-release device check.
 }

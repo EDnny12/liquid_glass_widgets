@@ -1,0 +1,96 @@
+name: 🐛 Bug Report
+description: Something isn't working as expected with liquid_glass_widgets
+title: "[Bug]: "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to file a bug! ❤️
+        Just 4 quick fields and you're done — we'll follow up if we need more.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: What's happening?
+      description: A clear description of the bug. What did you expect vs what actually happened?
+      placeholder: "When I use LiquidGlassContainer on iOS, the blur doesn't appear — I just see a transparent rectangle instead of the frosted glass effect."
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to Reproduce
+      description: How can we trigger this? Minimal steps or a code snippet both work great.
+      placeholder: |
+        1. Add `LiquidGlassContainer` to a `Stack` over an image
+        2. Run on iOS 17 physical device
+        3. Blur is missing
+
+        ```dart
+        // paste a minimal snippet if you have one
+        LiquidGlassContainer(
+          width: 200, height: 100,
+          child: Text('Hello'),
+        )
+        ```
+    validations:
+      required: true
+
+  - type: input
+    id: versions
+    attributes:
+      label: Versions
+      description: "Package version + Flutter version (run `flutter --version`)"
+      placeholder: "liquid_glass_widgets: 0.24.0 · Flutter 3.27.0 stable"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform
+      description: Where does this happen?
+      multiple: true
+      options:
+        - iOS
+        - Android
+        - macOS
+        - Windows
+        - Linux
+        - Web
+        - All platforms
+    validations:
+      required: true
+
+  - type: dropdown
+    id: rendering-backend
+    attributes:
+      label: Rendering Backend
+      description: "Optional but very helpful for shader bugs — check with `flutter run --enable-impeller` or `--no-enable-impeller`"
+      multiple: false
+      options:
+        - Impeller (default iOS/Android, recent Flutter)
+        - Skia (legacy / `--no-enable-impeller`)
+        - CanvasKit (Web)
+        - Not sure
+    validations:
+      required: false
+
+  - type: textarea
+    id: flutter-doctor
+    attributes:
+      label: Flutter Doctor (optional)
+      description: "Paste `flutter doctor -v` output if you have it — saves us a follow-up question!"
+      render: shell
+    validations:
+      required: false
+
+  - type: textarea
+    id: extras
+    attributes:
+      label: Anything else?
+      description: Screenshots, screen recordings, device model, or links that might help.
+    validations:
+      required: false

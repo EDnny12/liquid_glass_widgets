@@ -1,6 +1,7 @@
 import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+
 import 'package:liquid_glass_widgets_example/constants/glass_settings.dart';
 
 class InteractivePage extends StatefulWidget {
@@ -19,6 +20,7 @@ class _InteractivePageState extends State<InteractivePage> {
   // Segmented control state
   int _segment1 = 0;
   int _segment2 = 1;
+  int _verticalSegment = 0;
 
   // Slider state
   double _slider1 = 0.5;
@@ -38,19 +40,9 @@ class _InteractivePageState extends State<InteractivePage> {
       statusBarStyle: CupertinoTheme.of(context).brightness == Brightness.dark
           ? GlassStatusBarStyle.light
           : GlassStatusBarStyle.dark,
-      child: Scaffold(
-        extendBodyBehindAppBar: true,
-        backgroundColor: Colors.transparent,
-        appBar: GlassAppBar(
-          leading: GlassButton(
-            quality: GlassQuality.premium,
-            icon: Icon(CupertinoIcons.back),
-            onTap: () => Navigator.of(context).pop(),
-            width: 40,
-            height: 40,
-            iconSize: 20,
-          ),
-        ),
+      child: GlassScaffold(
+        backgroundColor: const Color(0x00000000),
+        appBar: const GlassAppBar.pinned(),
         body: GlassScrollEdgeEffect(
           topFadeHeight: MediaQuery.paddingOf(context).top + 44 + 40,
           fadeBottom: false,
@@ -80,7 +72,7 @@ class _InteractivePageState extends State<InteractivePage> {
               ),
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.all(24.0),
+                  padding: EdgeInsets.all(24.0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -91,7 +83,7 @@ class _InteractivePageState extends State<InteractivePage> {
                         children: [
                           Expanded(
                             child: GlassButton.custom(
-                              shape: const LiquidRoundedSuperellipse(
+                              shape: const LiquidRoundedRectangle(
                                   borderRadius: 28),
                               onTap: () {},
                               width: double.infinity,
@@ -128,25 +120,29 @@ class _InteractivePageState extends State<InteractivePage> {
                             icon: Icon(CupertinoIcons.heart),
                             onTap: () {},
                             label: 'Favorite',
-                            glowColor: Colors.red.withValues(alpha: 0.3),
+                            glowColor: CupertinoColors.systemRed
+                                .withValues(alpha: 0.3),
                           ),
                           GlassButton(
                             icon: Icon(CupertinoIcons.star),
                             onTap: () {},
                             label: 'Star',
-                            glowColor: Colors.amber.withValues(alpha: 0.3),
+                            glowColor: CupertinoColors.activeOrange
+                                .withValues(alpha: 0.3),
                           ),
                           GlassButton(
                             icon: Icon(CupertinoIcons.share),
                             onTap: () {},
                             label: 'Share',
-                            glowColor: Colors.blue.withValues(alpha: 0.3),
+                            glowColor: CupertinoColors.activeBlue
+                                .withValues(alpha: 0.3),
                           ),
                           GlassButton(
                             icon: Icon(CupertinoIcons.bookmark),
                             onTap: () {},
                             label: 'Save',
-                            glowColor: Colors.green.withValues(alpha: 0.3),
+                            glowColor: CupertinoColors.activeGreen
+                                .withValues(alpha: 0.3),
                           ),
                         ],
                       ),
@@ -160,21 +156,24 @@ class _InteractivePageState extends State<InteractivePage> {
                             icon: Icon(CupertinoIcons.play_fill),
                             onTap: () {},
                             shape: const LiquidOval(),
-                            glowColor: Colors.purple.withValues(alpha: 0.3),
+                            glowColor: CupertinoColors.systemPurple
+                                .withValues(alpha: 0.3),
                           ),
                           GlassButton(
                             icon: Icon(CupertinoIcons.pause_fill),
                             onTap: () {},
                             shape:
                                 const LiquidRoundedRectangle(borderRadius: 16),
-                            glowColor: Colors.blue.withValues(alpha: 0.3),
+                            glowColor: CupertinoColors.activeBlue
+                                .withValues(alpha: 0.3),
                           ),
                           GlassButton(
                             icon: Icon(CupertinoIcons.stop_fill),
                             onTap: () {},
                             shape: const LiquidRoundedSuperellipse(
                                 borderRadius: 16),
-                            glowColor: Colors.red.withValues(alpha: 0.3),
+                            glowColor: CupertinoColors.systemRed
+                                .withValues(alpha: 0.3),
                           ),
                         ],
                       ),
@@ -196,7 +195,7 @@ class _InteractivePageState extends State<InteractivePage> {
                         children: [
                           Expanded(
                             child: GlassButton.custom(
-                              shape: const LiquidRoundedSuperellipse(
+                              shape: const LiquidRoundedRectangle(
                                   borderRadius: 26),
                               style: GlassButtonStyle.prominent,
                               onTap: () {},
@@ -261,7 +260,8 @@ class _InteractivePageState extends State<InteractivePage> {
                           GlassIconButton(
                             icon: Icon(CupertinoIcons.heart),
                             onPressed: () {},
-                            glowColor: Colors.red.withValues(alpha: 0.3),
+                            glowColor: CupertinoColors.systemRed
+                                .withValues(alpha: 0.3),
                           ),
                           GlassIconButton(
                             icon: Icon(CupertinoIcons.star),
@@ -271,19 +271,22 @@ class _InteractivePageState extends State<InteractivePage> {
                           GlassIconButton(
                             icon: Icon(CupertinoIcons.bell),
                             onPressed: () {},
-                            glowColor: Colors.blue.withValues(alpha: 0.3),
+                            glowColor: CupertinoColors.activeBlue
+                                .withValues(alpha: 0.3),
                           ),
                           GlassIconButton(
                             icon: Icon(CupertinoIcons.share),
                             onPressed: () {},
                             shape: GlassIconButtonShape.roundedSquare,
-                            glowColor: Colors.green.withValues(alpha: 0.3),
+                            glowColor: CupertinoColors.activeGreen
+                                .withValues(alpha: 0.3),
                           ),
                           GlassIconButton(
                             icon: Icon(CupertinoIcons.settings),
                             onPressed: () {},
                             shape: GlassIconButtonShape.roundedSquare,
-                            glowColor: Colors.purple.withValues(alpha: 0.3),
+                            glowColor: CupertinoColors.systemPurple
+                                .withValues(alpha: 0.3),
                           ),
                         ],
                       ),
@@ -334,6 +337,68 @@ class _InteractivePageState extends State<InteractivePage> {
                         height: 28,
                         borderRadius: 14,
                       ),
+                      SizedBox(height: 24),
+                      _QualityLabel(label: 'Vertical — tap or drag'),
+                      SizedBox(height: 16),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          GlassSegmentedControl(
+                            direction: Axis.vertical,
+                            height: 52,
+                            segmentExtent: 56,
+                            segments: const [
+                              GlassSegment(
+                                icon: Icon(CupertinoIcons.square_grid_2x2),
+                                semanticLabel: 'Canvas',
+                              ),
+                              GlassSegment(
+                                icon: Icon(CupertinoIcons.circle_grid_hex),
+                                semanticLabel: 'Flow',
+                              ),
+                              GlassSegment(
+                                icon: Icon(CupertinoIcons.layers_alt),
+                                semanticLabel: 'Deep Dive',
+                              ),
+                            ],
+                            selectedIndex: _verticalSegment,
+                            onSegmentSelected: (i) =>
+                                setState(() => _verticalSegment = i),
+                          ),
+                          SizedBox(width: 20),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  const [
+                                    'Canvas',
+                                    'Flow',
+                                    'Deep Dive'
+                                  ][_verticalSegment],
+                                  style: TextStyle(
+                                    fontSize: 17,
+                                    fontWeight: FontWeight.w600,
+                                    color: CupertinoColors.label
+                                        .resolveFrom(context),
+                                  ),
+                                ),
+                                SizedBox(height: 6),
+                                Text(
+                                  'The indicator, jelly motion, drag physics, '
+                                  'and icon state all follow the vertical axis.',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    height: 1.35,
+                                    color: CupertinoColors.secondaryLabel
+                                        .resolveFrom(context),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
 
                       SizedBox(height: 40),
 
@@ -347,13 +412,17 @@ class _InteractivePageState extends State<InteractivePage> {
                         value: _switch1,
                         onChanged: (v) => setState(() => _switch1 = v),
                       ),
-                      const Divider(color: Colors.white12, height: 32),
+                      Divider(
+                          color: CupertinoColors.white.withValues(alpha: 0.12),
+                          height: 32),
                       _SwitchComparisonRow(
                         title: 'Dark Mode',
                         value: _switch2,
                         onChanged: (v) => setState(() => _switch2 = v),
                       ),
-                      const Divider(color: Colors.white12, height: 32),
+                      Divider(
+                          color: CupertinoColors.white.withValues(alpha: 0.12),
+                          height: 32),
                       _SwitchComparisonRow(
                         title: 'Location',
                         value: _switch3,
@@ -401,8 +470,9 @@ class _InteractivePageState extends State<InteractivePage> {
                       GlassSlider(
                         value: _slider2,
                         onChanged: (v) => setState(() => _slider2 = v),
-                        activeColor: Colors.blue,
-                        thumbColor: Colors.blue.shade100,
+                        activeColor: CupertinoColors.activeBlue,
+                        thumbColor:
+                            CupertinoColors.activeBlue.withValues(alpha: 0.3),
                       ),
 
                       SizedBox(height: 40),
@@ -537,8 +607,8 @@ class _InteractivePageState extends State<InteractivePage> {
                             label: 'Sort By',
                             icon: Icon(CupertinoIcons.arrow_up_arrow_down),
                             buttonWidth: 120,
-                            buttonShape: const LiquidRoundedSuperellipse(
-                                borderRadius: 22),
+                            buttonShape:
+                                const LiquidRoundedRectangle(borderRadius: 22),
                             items: [
                               GlassMenuItem(
                                 title: 'Name',
@@ -730,7 +800,7 @@ class _InteractivePageState extends State<InteractivePage> {
                             ),
                           ),
                           GlassBadge.dot(
-                            dotColor: Colors.green,
+                            dotColor: CupertinoColors.activeGreen,
                             child: GlassButton(
                               icon: Icon(CupertinoIcons.person),
                               onTap: () {},
@@ -779,7 +849,8 @@ class _InteractivePageState extends State<InteractivePage> {
                           return GlassChip(
                             label: filter,
                             selected: isSelected,
-                            selectedColor: Colors.blue.withValues(alpha: 0.4),
+                            selectedColor: CupertinoColors.activeBlue
+                                .withValues(alpha: 0.4),
                             onTap: () {
                               setState(() {
                                 if (isSelected) {
@@ -954,10 +1025,13 @@ class _QualityRow extends StatelessWidget {
     return Row(
       children: [
         if (premiumLabel.isNotEmpty)
-          _QualityBadge(label: premiumLabel, color: Colors.amber),
+          _QualityBadge(
+              label: premiumLabel, color: CupertinoColors.activeOrange),
         const Spacer(),
         if (standardLabel.isNotEmpty)
-          _QualityBadge(label: standardLabel, color: Colors.white38),
+          _QualityBadge(
+              label: standardLabel,
+              color: CupertinoColors.white.withValues(alpha: 0.38)),
       ],
     );
   }
@@ -971,7 +1045,7 @@ class _QualityBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(6),

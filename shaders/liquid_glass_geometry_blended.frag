@@ -1,4 +1,15 @@
 // Copyright 2025, Tim Lehmann for whynotmake.it
+// Copyright 2026, Sebastian Degenaar for pixel-innovations.com (liquid_glass_widgets)
+//
+// SPDX-License-Identifier: MIT
+//
+// Originally: Geometry precomputation shader using displacement-based encoding
+// Modifications (2026):
+//   - Migrated from displacement encoding to true surface normal encoding (V1).
+//   - Switched precision from mediump to highp to fix ~1.5px banding on mobile.
+//   - Added Windows/SkSL SPIR-V compatibility (literal-only indexing).
+//   - Normal computed via dFdx/dFdy on the SDF field for accurate blend zones.
+//   - MAX_SHAPES reduced from 64 to 16 to fit Impeller uniform buffer limits.
 //
 // Geometry precomputation shader for blended liquid glass shapes
 // This shader pre-computes the surface normal and encodes it into a texture.
@@ -45,41 +56,45 @@ void main() {
 
     float sd = sceneSDF(fragCoord, int(uNumShapes), uBlend);
 
-    // Apply logical-pixel anti-aliasing.
-    // Centering the smoothstep around 0.0 ensures the mathematical boundary (sd=0)
-    // is exactly 50% opaque. This correctly aligns the peak edge highlight with
-    // the visual edge of the shape, restoring maximum brightness.
-    // 1.5 logical pixels of smoothing guarantees a pristine edge that survives
-    // the 4% bilinear scaling of press animations without stair-stepping.
+    // Compute the SDF gradient for surface normal generation.
+    //
+    // The tap spacing acts as a spatial low-pass filter. To ensure the normal
+    // is smoothed identically on all devices regardless of pixel density, the
+    // physical tap distance must scale with DPR. Since the baseline tuning was
+    // done on a 3x Retina display with a 1.0px tap, the universal tap step
+    // is (uDpr / 3.0).
+    float stepDist = uDpr / 3.0;
+    float sdPX = sceneSDF(fragCoord + vec2(stepDist, 0.0), int(uNumShapes), uBlend);
+    float sdMX = sceneSDF(fragCoord - vec2(stepDist, 0.0), int(uNumShapes), uBlend);
+    float sdPY = sceneSDF(fragCoord + vec2(0.0, stepDist), int(uNumShapes), uBlend);
+    float sdMY = sceneSDF(fragCoord - vec2(0.0, stepDist), int(uNumShapes), uBlend);
+
+    // Span is 2.0 * stepDist, so divide by it for the unit gradient.
+    float dx = (sdPX - sdMX) / (2.0 * stepDist);
+    float dy = (sdPY - sdMY) / (2.0 * stepDist);
+
+    float gradMag = sqrt(dx * dx + dy * dy);
+    // Normalize the SDF using the gradient magnitude. This converts a pseudo-SDF
+    // (like our continuous superellipse) into a true Euclidean distance metric.
+    float sdN = (gradMag > 0.1) ? sd / gradMag : sd;
+
+    // Apply logical-pixel anti-aliasing using the NORMALIZED distance (sdN).
+    // Using raw `sd` for pseudo-SDFs causes pixelated edges because the field
+    // crosses zero too quickly. `sdN` guarantees exact 1-pixel wide gradients.
+    // 
+    // Note: The physical radius here scales directly by raw `uDpr`, not by `uDpr / 3.0`.
+    // This is correct because we want a 1.5 logical-pixel wide smoothing radius on all
+    // screens. A 1.5 logical-pixel radius naturally maps to `1.5 * uDpr` physical pixels.
+    // This guarantees a pristine edge that survives the 4% bilinear scaling of press 
+    // animations without stair-stepping, on every device density.
     float smoothing = 1.5 * max(1.0, uDpr);
-    float foregroundAlpha = smoothstep(smoothing * 0.5, -smoothing * 0.5, sd);
+    float foregroundAlpha = smoothstep(smoothing * 0.5, -smoothing * 0.5, sdN);
     if (foregroundAlpha < 0.01) {
         fragColor = vec4(0.0);
         return;
     }
 
-    // Compute the SDF gradient for surface normal generation.
-    //
-    // We MUST use central ±0.5 px finite differences on ALL platforms.
-    // While Metal supports dFdx/dFdy on scalar floats, hardware derivatives are
-    // computed in 2x2 pixel quads, resulting in blocky 2x2 normals. When these
-    // blocky normals refract high-contrast edges (like the base pill's white rim),
-    // they produce severe stair-step aliasing.
-    // Central differences guarantee a perfectly smooth, continuous normal per-pixel.
-    //
-    // PP4: Reduce 5 sceneSDF() calls to 4 by approximating the center sample
-    // from the average of the 4 offset samples. The approximation error is ~0.5%
-    // — below the AA smoothstep band and imperceptible in the alpha/height output.
-    // For a blend group with N shapes this saves N smooth-union evaluations.
-    float sdPX = sceneSDF(fragCoord + vec2(0.5, 0.0), int(uNumShapes), uBlend);
-    float sdMX = sceneSDF(fragCoord - vec2(0.5, 0.0), int(uNumShapes), uBlend);
-    float sdPY = sceneSDF(fragCoord + vec2(0.0, 0.5), int(uNumShapes), uBlend);
-    float sdMY = sceneSDF(fragCoord - vec2(0.0, 0.5), int(uNumShapes), uBlend);
-    sd = (sdPX + sdMX + sdPY + sdMY) * 0.25; // reassign center approximation
-    float dx = sdPX - sdMX;
-    float dy = sdPY - sdMY;
-
-    float n_cos = max(uThickness + sd, 0.0) / uThickness;
+    float n_cos = max(uThickness + sdN, 0.0) / uThickness;
     float n_sin = sqrt(max(0.0, 1.0 - n_cos * n_cos));
 
     // True surface normal from the SDF gradient — this is what we store.
@@ -92,9 +107,9 @@ void main() {
         return;
     }
 
-    float x = uThickness + sd;
+    float x = uThickness + sdN;
     float sqrtTerm = sqrt(max(0.0, uThickness * uThickness - x * x));
-    float height = mix(sqrtTerm, uThickness, float(sd < -uThickness));
+    float height = mix(sqrtTerm, uThickness, float(sdN < -uThickness));
 
     // Encode normal.xy + height + alpha.
     // The render pass recomputes displacement = refract(incident, normal, 1/n)

@@ -1,36 +1,36 @@
 /// Apple Music iOS 26 — High-Fidelity Demo
 ///
 /// Animation architecture:
-///   • `GlassSearchableBottomBar` uses `isSearchActive: _isMiniMode || _isSearching`
+///   • `GlassTabBar.searchable` uses `isSearchActive: _isMiniMode || _isSearching`
 ///     so the tabs spring-collapse whenever scrolled OR searching — matching the
 ///     iOS 26 morphing animation exactly.
 ///
-///   • Two play bar pills work in concert:
-///       1. Body-Stack pill   — full-width, floats ABOVE the nav bar when not mini.
-///          On scroll it AnimatedPositioned DOWN to bar level + AnimatedOpacity 0.
-///       2. NavBar-Stack pill — lives INSIDE the bottomNavigationBar SizedBox Stack
-///          so it receives taps even in the nav-bar hit-test zone.  It AnimatedOpacity
-///          fades IN when mini, always sitting at bar-pill level.
+///   • `bottomAccessory` handles the mini-player pill automatically:
+///       - When expanded (`!_isMiniMode`), the accessory sits centered directly
+///         above the navigation bar pill.
+///       - When inline (`_isMiniMode`), the accessory slides down and right,
+///         sandwiching itself exactly between the collapsed tab indicator and
+///         the collapsed search capsule.
 ///
-///     Together they create the illusion of "the bar collapses, the play pill slides
-///     into the gap", with the handoff invisible to the user.
-///
-///   • A small search GlassButton is also inside the NavBar Stack at the right
-///     edge — visible only in mini mode to match the iOS 26 [Home][Play][Search] row.
+///     The entire transition is handled internally by a single unified
+///     TweenAnimationBuilder, perfectly synchronizing height, position, and width
+///     to match the iOS 26 `tabViewBottomAccessory(.inline)` behavior.
 ///
 /// Run standalone:
-///   flutter run -t lib/apple_music/apple_music_demo.dart
+///   flutter run -d macos -t lib/apple_music/apple_music_demo.dart
 library;
 
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart'
+    show defaultTargetPlatform, TargetPlatform;
+
 import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // CONSTANTS
 // ─────────────────────────────────────────────────────────────────────────────
 
-const _kMusicRed = Color(0xFFFA2D48);
+const _kMusicRed = Color(0xFFFF2D55);
 const _kBackground = CupertinoDynamicColor.withBrightness(
     color: Color(0xFFF2F2F7), darkColor: Color(0xFF000000));
 const _kCardGray = CupertinoDynamicColor.withBrightness(
@@ -43,14 +43,26 @@ const _kSpacing = 8.0;
 
 /// Glass shared by every pill (play bar, home icon, search icon).
 LiquidGlassSettings _kPillGlass(BuildContext context) => LiquidGlassSettings(
-      glassColor: CupertinoTheme.of(context).brightness == Brightness.dark
-          ? const Color(0xCC1C1C1E)
-          : const Color(0xCCF2F2F7),
-      thickness: 30,
-      blur: 3,
-      lightIntensity: 0.35,
-      chromaticAberration: .01,
-    );
+    glassColor: CupertinoTheme.of(context).brightness == Brightness.dark
+        ? const Color(0xCC1C1C1E)
+        : const Color(0xCCF2F2F7),
+    thickness: 30,
+    blur: 2,
+    lightIntensity: 0.18,
+    chromaticAberration: .01,
+    saturation: 1.2,
+    fresnelStrength: 0.0);
+
+//  thickness: 30,
+//     blur: 2,
+//     chromaticAberration: .01,
+//     lightAngle: GlassDefaults.lightAngle,
+//     lightIntensity: 0.15,
+//     ambientStrength: 0,
+//     refractiveIndex: 1.2,
+//     fresnelStrength: 1.0,
+//     saturation: 1.2,
+//     specularSharpness: GlassSpecularSharpness.medium,
 
 // ─────────────────────────────────────────────────────────────────────────────
 // APP
@@ -79,16 +91,6 @@ class AppleMusicDemoApp extends StatelessWidget {
     return CupertinoApp(
       title: 'Apple Music',
       theme: const CupertinoThemeData(brightness: Brightness.dark),
-      builder: (context, child) => Theme(
-        data: ThemeData.dark(useMaterial3: true).copyWith(
-          scaffoldBackgroundColor: _kBackground,
-          colorScheme: const ColorScheme.dark(
-            primary: _kMusicRed,
-            surface: _kBackground,
-          ),
-        ),
-        child: child!,
-      ),
       home: const AppleMusicHomeScreen(),
       debugShowCheckedModeBanner: false,
     );
@@ -185,9 +187,10 @@ class _AppleMusicHomeScreenState extends State<AppleMusicHomeScreen> {
         blur: 2,
         chromaticAberration: .01,
         lightAngle: GlassDefaults.lightAngle,
-        lightIntensity: .5,
+        lightIntensity: 0.2,
         ambientStrength: 0,
         refractiveIndex: 1.2,
+        fresnelStrength: 0.0,
         saturation: 1.2,
         specularSharpness: GlassSpecularSharpness.medium,
       );
@@ -223,38 +226,14 @@ class _AppleMusicHomeScreenState extends State<AppleMusicHomeScreen> {
     // iOS native design floats the pill over the home indicator (ignoring safe area).
     // Android 3-button nav requires us to clear the opaque system buttons.
     // On gesture-nav devices safeBottom is 0, so no offset is applied.
-    final platform = Theme.of(context).platform;
-    final isIOS =
-        platform == TargetPlatform.iOS || platform == TargetPlatform.macOS;
+    final isIOS = defaultTargetPlatform == TargetPlatform.iOS ||
+        defaultTargetPlatform == TargetPlatform.macOS;
     final sysBottom = isIOS ? 0.0 : MediaQuery.viewPaddingOf(context).bottom;
 
-    // GlassSearchableBottomBar handles keyboard avoidance internally (floatY),
-    // so we only need to push the wrapper up by the system nav bar height.
-    final bottomOffset = sysBottom;
-
-    const double expandedNavBarH = 40 + 2 * _kPaddingV; // 72.0
-    const double collapsedNavBarH = 60.0; // searchBarHeight
-
-    // Gap b
-    const double pillGap = 14.0;
-
-    // aboveBarBottom: shifts down when search is active because the bar is
-    // shorter (50px vs 72px), so we anchor to whichever height is current.
-    final double activeNavBarH =
-        _isSearching ? collapsedNavBarH : expandedNavBarH;
-    final double aboveBarBottom = activeNavBarH + pillGap + bottomOffset;
-
-    // miniBarBottom: position of the pill row inside the body Stack.
-    final double miniBarBottom = _kPaddingV + bottomOffset;
-
-    // contentPad: extra bottom space so the last sliver scrolls above all bars.
-    final double contentPad = aboveBarBottom + 50.0 + 8.0;
-
-    // The collapsed home/search pills render at searchBarHeight (50), not _kBarH (64).
-    // Using _kBarH here causes an ~18px gap; 50+6 gives the tight ~6px Apple uses.
-    const double collapsedPillW = 50.0;
-    final double miniPlayLeft = _kPaddingH + collapsedPillW + 6.0;
-    final double miniPlayRight = _kPaddingH + collapsedPillW + 6.0;
+    // Content bottom padding: bar (64) + vertical padding (16*2) + accessory (50)
+    // + spacing (8) + extra clearance (8).
+    final double contentPad =
+        _kBarH + 2 * _kPaddingV + 50.0 + _kSpacing + 8.0 + sysBottom;
 
     return GlassScaffold(
       background: ColoredBox(color: _kBackground.resolveFrom(context)),
@@ -265,7 +244,6 @@ class _AppleMusicHomeScreenState extends State<AppleMusicHomeScreen> {
       topEdgeFade: true,
       bottomEdgeFade: true,
       topEdgeFadeExtent: 0, // no app bar — just status bar fade
-      bottomBarHeight: _isMiniMode ? 20 : 40,
       bottomEdgeFadeExtent: 0, // glass bar is transparent — no extra fade
       resizeToAvoidBottomInset: false,
 
@@ -303,38 +281,12 @@ class _AppleMusicHomeScreenState extends State<AppleMusicHomeScreen> {
         ),
       ),
 
-      // ── Play pill overlay (between body and bars in z-order) ───────────────
-      bodyOverlays: [
-        // ── Play pill (between body and bars in z-order) ──────────────────
-        AnimatedPositioned(
-          duration: const Duration(milliseconds: 420),
-          curve: Curves.easeInOutCubic,
-          bottom:
-              (_isMiniMode && !_isSearching) ? miniBarBottom : aboveBarBottom,
-          left: (_isMiniMode && !_isSearching) ? miniPlayLeft : _kPaddingH,
-          right: (_isMiniMode && !_isSearching) ? miniPlayRight : _kPaddingH,
-          height: 50.0,
-          child: AnimatedOpacity(
-            duration: const Duration(milliseconds: 220),
-            curve: Curves.easeInOut,
-            opacity: _searchFieldFocused ? 0.0 : 1.0,
-            child: IgnorePointer(
-              ignoring: _searchFieldFocused,
-              child: _PlayBarPill(
-                onTap: () {
-                  if (_isMiniMode) {
-                    _dismissMiniMode();
-                  }
-                },
-              ),
-            ),
-          ),
-        ),
-      ],
-
       // ── Bottom navigation bar ──────────────────────────────────────────────
       bottomBar: GlassTabBar.searchable(
         isSearchActive: _isMiniMode || _isSearching,
+        bottomAccessoryPlacement: (_isMiniMode && !_isSearching)
+            ? GlassTabBarAccessoryPlacement.inline
+            : GlassTabBarAccessoryPlacement.expanded,
         selectedIndex: _selectedTab,
         onTabSelected: (index) {
           if (index == _selectedTab && _isMiniMode) {
@@ -358,6 +310,13 @@ class _AppleMusicHomeScreenState extends State<AppleMusicHomeScreen> {
         horizontalPadding: _kPaddingH,
         verticalPadding: _kPaddingV,
         spacing: _kSpacing,
+        // ── tabViewBottomAccessory (iOS 26) ─────────────────────────────────
+        // The play pill sits above the tab bar in expanded mode and animates
+        // inline beside the collapsed search capsule in mini mode — matching
+        // Apple's tabViewBottomAccessory(.inline) behaviour exactly.
+        bottomAccessory: _PlayBarPill(onTap: _dismissMiniMode),
+        bottomAccessoryHeight: 50.0,
+        bottomAccessoryEnabled: !_searchFieldFocused,
         selectedIconColor: _kMusicRed,
         unselectedIconColor:
             CupertinoColors.label.resolveFrom(context).withValues(alpha: 0.9),
@@ -398,12 +357,13 @@ class _AppleMusicHomeScreenState extends State<AppleMusicHomeScreen> {
                 : CupertinoColors.label
                     .resolveFrom(context)
                     .withValues(alpha: 0.9);
-            return Center(
-              child: IconTheme(
-                data: IconThemeData(color: iconColor, size: 28),
-                child: tab.activeIcon ?? tab.icon ?? const SizedBox.shrink(),
-              ),
-            );
+            final icon = tab.activeIcon ?? tab.icon;
+            if (icon is Icon) {
+              return Center(
+                child: Icon(icon.icon, color: iconColor, size: 28),
+              );
+            }
+            return icon ?? const SizedBox.shrink();
           },
         ),
         tabs: _kTabs,
@@ -426,8 +386,15 @@ class _AppleMusicHomeScreenState extends State<AppleMusicHomeScreen> {
             title: 'Music just for you.\n2 months free.',
             subtitle: 'Accept Free Trial',
             subtext: '2 months free, then \$12.99/month',
-            color: _kMusicRed,
-            textColor: Colors.white,
+            gradient: const LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Color(0xFFF83E4F), // Vibrant Apple Music pinkish-red
+                Color(0xFFE2072C), // Deeper red at the bottom
+              ],
+            ),
+            textColor: CupertinoColors.white,
             child: const _AppleMusicLogo(),
           ),
         ),
@@ -436,8 +403,17 @@ class _AppleMusicHomeScreenState extends State<AppleMusicHomeScreen> {
             title: 'Music for the whole\nfamily. 2 months free.',
             subtitle: 'Accept Free Trial',
             subtext: '2 months free, then \$19.99/month',
-            color: _kCardGray.resolveFrom(context),
+            // gradient: const LinearGradient(
+            //   begin: Alignment.topCenter,
+            //   end: Alignment.bottomCenter,
+            //   colors: [
+            //     Color(0xFF2C2C2E), // dark charcoal top
+            //     Color(0xFF1C1C1E), // near-black bottom
+            //   ],
+            // ),
+            color: Color(0xFF1D1B1E),
             showBorder: true,
+            textColor: CupertinoColors.white,
             child: Icon(
               CupertinoIcons.person_3_fill,
               color: _kMusicRed,
@@ -470,7 +446,7 @@ class _AppleMusicHomeScreenState extends State<AppleMusicHomeScreen> {
         ),
         SliverToBoxAdapter(
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 4, 16, 20),
+            padding: EdgeInsets.fromLTRB(20, 4, 16, 20),
             child: Text(
               'Radio',
               style: TextStyle(
@@ -489,7 +465,7 @@ class _AppleMusicHomeScreenState extends State<AppleMusicHomeScreen> {
               (context, i) {
                 final s = stations[i % stations.length];
                 return Container(
-                  margin: const EdgeInsets.only(bottom: 12),
+                  margin: EdgeInsets.only(bottom: 12),
                   height: 72,
                   decoration: BoxDecoration(
                     color: _kCardGray.resolveFrom(context),
@@ -509,7 +485,7 @@ class _AppleMusicHomeScreenState extends State<AppleMusicHomeScreen> {
                             color: CupertinoColors.label.resolveFrom(context),
                             size: 28),
                       ),
-                      const SizedBox(width: 16),
+                      SizedBox(width: 16),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -561,7 +537,7 @@ class _AppleMusicHomeScreenState extends State<AppleMusicHomeScreen> {
         ),
         SliverToBoxAdapter(
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 4, 16, 8),
+            padding: EdgeInsets.fromLTRB(20, 4, 16, 8),
             child: Text(
               'Library',
               style: TextStyle(
@@ -579,28 +555,40 @@ class _AppleMusicHomeScreenState extends State<AppleMusicHomeScreen> {
             delegate: SliverChildBuilderDelegate(
               (context, i) => Column(
                 children: [
-                  ListTile(
-                    leading: Icon(
-                      CupertinoIcons.music_albums_fill,
-                      color: _kMusicRed,
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 12),
+                    child: Row(
+                      children: [
+                        Icon(
+                          CupertinoIcons.music_albums_fill,
+                          color: _kMusicRed,
+                          size: 22,
+                        ),
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Text(
+                            sections[i % sections.length],
+                            style: TextStyle(
+                                color:
+                                    CupertinoColors.label.resolveFrom(context),
+                                fontSize: 17),
+                          ),
+                        ),
+                        Icon(CupertinoIcons.chevron_forward,
+                            color: CupertinoColors.tertiaryLabel
+                                .resolveFrom(context),
+                            size: 16),
+                      ],
                     ),
-                    title: Text(
-                      sections[i % sections.length],
-                      style: TextStyle(
-                          color: CupertinoColors.label.resolveFrom(context),
-                          fontSize: 17),
-                    ),
-                    trailing: Icon(CupertinoIcons.chevron_forward,
-                        color:
-                            CupertinoColors.tertiaryLabel.resolveFrom(context),
-                        size: 16),
                   ),
-                  Divider(
-                      height: 1,
-                      color: CupertinoColors.label
-                          .resolveFrom(context)
-                          .withValues(alpha: 0.1),
-                      indent: 56),
+                  Container(
+                    height: 0.33,
+                    margin: const EdgeInsets.only(left: 56),
+                    color: CupertinoColors.label
+                        .resolveFrom(context)
+                        .withValues(alpha: 0.1),
+                  ),
                 ],
               ),
               childCount: sections.length * 4,
@@ -613,7 +601,7 @@ class _AppleMusicHomeScreenState extends State<AppleMusicHomeScreen> {
 
   Widget _buildListenNowHeader() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 4, 16, 12),
+      padding: EdgeInsets.fromLTRB(20, 4, 16, 12),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
@@ -630,7 +618,7 @@ class _AppleMusicHomeScreenState extends State<AppleMusicHomeScreen> {
           Container(
             width: 36,
             height: 36,
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               color: Color(0xFF4C4556),
               shape: BoxShape.circle,
             ),
@@ -656,13 +644,13 @@ class _AppleMusicHomeScreenState extends State<AppleMusicHomeScreen> {
         ),
         SliverToBoxAdapter(
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 4, 16, 20),
+            padding: EdgeInsets.fromLTRB(20, 4, 16, 20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   children: [
-                    Icon(Icons.apple,
+                    Icon(CupertinoIcons.star,
                         color: CupertinoColors.label.resolveFrom(context),
                         size: 22),
                     SizedBox(width: 4),
@@ -727,7 +715,7 @@ class _AppleMusicHomeScreenState extends State<AppleMusicHomeScreen> {
                 Icon(CupertinoIcons.search,
                     size: 64,
                     color: CupertinoColors.tertiaryLabel.resolveFrom(context)),
-                const SizedBox(height: 16),
+                SizedBox(height: 16),
                 Text(
                   'No Recent Searches',
                   style: TextStyle(
@@ -737,7 +725,7 @@ class _AppleMusicHomeScreenState extends State<AppleMusicHomeScreen> {
                     letterSpacing: -0.3,
                   ),
                 ),
-                const SizedBox(height: 6),
+                SizedBox(height: 6),
                 Text(
                   'Your recent searches will appear here.',
                   style: TextStyle(
@@ -795,10 +783,10 @@ class _PlayBarPill extends StatelessWidget {
       useOwnLayer: true,
       width: double.infinity,
       height: _kBarH,
-      shape: const LiquidRoundedSuperellipse(borderRadius: _kBarH / 2),
+      shape: const LiquidRoundedRectangle(borderRadius: _kBarH / 2),
       settings: _kPillGlass(context),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
+        padding: EdgeInsets.symmetric(horizontal: 20),
         child: Row(
           children: [
             // Album art
@@ -807,17 +795,17 @@ class _PlayBarPill extends StatelessWidget {
               child: Container(
                 width: 32,
                 height: 32,
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [Color(0xFFB22222), Color(0xFF4A0000)],
                   ),
                 ),
-                child: Icon(Icons.music_note,
+                child: Icon(CupertinoIcons.music_note,
                     color: CupertinoColors.secondaryLabel.resolveFrom(context),
                     size: 20),
               ),
             ),
-            const SizedBox(width: 10),
+            SizedBox(width: 10),
             // Title + artist
             Expanded(
               child: Column(
@@ -846,13 +834,13 @@ class _PlayBarPill extends StatelessWidget {
                 ],
               ),
             ),
-            Icon(CupertinoIcons.play_arrow_solid,
+            Icon(CupertinoIcons.play_fill,
                 color: CupertinoColors.label.resolveFrom(context), size: 24),
-            const SizedBox(width: 12),
+            SizedBox(width: 12),
             Icon(CupertinoIcons.forward_end_fill,
                 color: CupertinoColors.secondaryLabel.resolveFrom(context),
                 size: 20),
-            const SizedBox(width: 2),
+            SizedBox(width: 2),
           ],
         ),
       ),
@@ -868,7 +856,7 @@ class _AppleMusicLogo extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Icon(Icons.apple,
+        Icon(CupertinoIcons.star,
             color: CupertinoColors.label.resolveFrom(context), size: 56),
         Text(
           'Music',
@@ -888,7 +876,8 @@ class _HeroCard extends StatelessWidget {
   final String title;
   final String subtitle;
   final String subtext;
-  final Color color;
+  final Color? color;
+  final Gradient? gradient;
   final Color? textColor;
   final Widget child;
   final bool showBorder;
@@ -897,19 +886,21 @@ class _HeroCard extends StatelessWidget {
     required this.title,
     required this.subtitle,
     required this.subtext,
-    required this.color,
     required this.child,
+    this.color,
+    this.gradient,
     this.textColor,
     this.showBorder = false,
-  });
+  }) : assert(color != null || gradient != null, 'Provide color or gradient');
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       height: 400,
       decoration: BoxDecoration(
         color: color,
+        gradient: gradient,
         borderRadius: BorderRadius.circular(24),
         border: showBorder
             ? Border.all(
@@ -920,7 +911,7 @@ class _HeroCard extends StatelessWidget {
               )
             : null,
       ),
-      padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 24),
+      padding: EdgeInsets.symmetric(vertical: 24, horizontal: 24),
       child: Column(
         children: [
           Text(
@@ -933,9 +924,9 @@ class _HeroCard extends StatelessWidget {
               height: 1.2,
             ),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8),
           Expanded(child: child),
-          const SizedBox(height: 8),
+          SizedBox(height: 8),
           Text(
             subtitle,
             style: TextStyle(
@@ -944,7 +935,7 @@ class _HeroCard extends StatelessWidget {
               fontWeight: FontWeight.w600,
             ),
           ),
-          const SizedBox(height: 4),
+          SizedBox(height: 4),
           Text(
             subtext,
             style: TextStyle(
@@ -971,7 +962,7 @@ class _BrowseCategory extends StatelessWidget {
       child: Container(
         color: color,
         alignment: Alignment.bottomLeft,
-        padding: const EdgeInsets.all(12),
+        padding: EdgeInsets.all(12),
         child: Text(
           name,
           style: TextStyle(

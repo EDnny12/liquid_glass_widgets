@@ -1,10 +1,15 @@
+import 'dart:math' as math;
+
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 
 import '../../src/renderer/liquid_glass_renderer.dart';
 import '../../types/glass_quality.dart';
+import '../interactive/glass_button.dart';
 import '../shared/glass_isolation_scope.dart';
+import 'glass_bar_item.dart';
 import 'glass_large_title.dart' show GlassLargeTitleController;
+import 'glass_navigation_shell.dart';
+import 'glass_pinned_bar_chrome.dart';
 
 /// A navigation bar layout widget following Apple's iOS 26 design patterns.
 ///
@@ -80,23 +85,81 @@ import 'glass_large_title.dart' show GlassLargeTitleController;
 /// [Scaffold.appBar] and [CupertinoPageScaffold.navigationBar].
 class GlassAppBar extends StatelessWidget
     implements ObstructingPreferredSizeWidget {
-  /// Creates a glass app bar.
+  /// Creates a glass app bar with widget-based [leading] and [actions].
   ///
   /// The bar itself is a simple layout container with a [backgroundColor].
   /// Glass effects are rendered by individual child widgets (e.g. [GlassButton])
   /// inside the bar — not by the bar surface.
+  ///
+  /// A bar built this way never participates in navigation pinning: its
+  /// widgets live in the route and slide with the page. Use
+  /// [GlassAppBar.pinned] for the iOS 26 behaviour where the back button and
+  /// actions stay put across route transitions.
   const GlassAppBar({
     super.key,
     this.title,
     this.leading,
     this.actions,
     this.centerTitle = true,
-    this.backgroundColor = Colors.transparent,
-    this.preferredSize = const Size.fromHeight(44.0),
+    // Whitelisted: Structural transparent default, not a Material colour.
+    this.backgroundColor = const Color(0x00000000),
+    this.toolbarHeight = 44.0,
     this.padding = const EdgeInsets.symmetric(horizontal: 8),
     this.buttonSettings,
     this.largeTitleController,
-  });
+    this.bottom,
+  })  : pinnedActions = null,
+        pinnedLeading = const <GlassBarItem>[],
+        pinnedBackButton = true,
+        pinnedLeadingItemsSupplementBackButton = false,
+        onBack = null;
+
+  /// Creates a glass app bar whose chrome pins above the [Navigator].
+  ///
+  /// Inside a [GlassNavigationShell], the automatic back button and the
+  /// [actions] capsule stay put while the page slides during push and pop,
+  /// morphing in place into the next route's items — the iOS 26 navigation
+  /// bar behaviour. Without a shell (or where the effect cannot render) the
+  /// same items render inside this bar, so screens work either way.
+  ///
+  /// [leading] and [actions] are declared as data ([GlassBarItem]), mirroring
+  /// `UIBarButtonItem` — there is no widget-based `leading`/`actions` in this
+  /// mode, because arbitrary widgets cannot be hoisted to the shell. Items
+  /// sharing an id across routes morph as the same item; see
+  /// [GlassBarItem.icon].
+  ///
+  /// The back button appears whenever the route can be popped and never on a
+  /// root route. A non-empty [leading] **replaces** it — UIKit's rule for
+  /// `leftBarButtonItems`, and Flutter's for [AppBar.leading], which implies a
+  /// leading only when none was given. Set
+  /// [leadingItemsSupplementBackButton] to show both, mirroring
+  /// `UINavigationItem.leftItemsSupplementBackButton`. Set [backButton] to
+  /// false to suppress the back button outright, and [onBack] to replace its
+  /// default `Navigator.maybePop()` — for example with go_router's
+  /// `context.pop()`.
+  const GlassAppBar.pinned({
+    super.key,
+    this.title,
+    List<GlassBarItem> leading = const [],
+    List<GlassBarItem> actions = const [],
+    bool backButton = true,
+    bool leadingItemsSupplementBackButton = false,
+    this.onBack,
+    this.centerTitle = true,
+    // Whitelisted: Structural transparent default, not a Material colour.
+    this.backgroundColor = const Color(0x00000000),
+    this.toolbarHeight = 44.0,
+    this.padding = const EdgeInsets.symmetric(horizontal: 8),
+    this.buttonSettings,
+    this.largeTitleController,
+    this.bottom,
+  })  : pinnedActions = actions,
+        pinnedLeading = leading,
+        pinnedBackButton = backButton,
+        pinnedLeadingItemsSupplementBackButton =
+            leadingItemsSupplementBackButton,
+        leading = null,
+        actions = null;
 
   // ===========================================================================
   // Properties
@@ -116,14 +179,72 @@ class GlassAppBar extends StatelessWidget
 
   /// The background color of the app bar.
   ///
-  /// Defaults to [Colors.transparent] to match iOS 26's transparent
+  /// Defaults to [const Color(0x00000000)] to match iOS 26's transparent
   /// navigation bar pattern. Use an opaque colour for solid bars
   /// (e.g. WhatsApp conversation, music player).
   final Color backgroundColor;
 
-  /// The preferred height of the app bar.
+  /// The height of the toolbar row (excluding [bottom]).
+  ///
+  /// Defaults to `44.0` to match iOS 26 navigation bar height.
+  final double toolbarHeight;
+
+  /// A widget to display at the bottom of the app bar, below the title row.
+  ///
+  /// Typically a [TabBar]. Must implement [PreferredSizeWidget] so the
+  /// scaffold can measure the total bar height correctly.
+  ///
+  /// When non-null, [preferredSize] is `toolbarHeight + bottom.preferredSize.height`.
+  final PreferredSizeWidget? bottom;
+
+  /// Trailing bar items declared as data, pinned above the [Navigator] by an
+  /// enclosing [GlassNavigationShell].
+  ///
+  /// Set by [GlassAppBar.pinned] (its `actions` parameter, defaulting to
+  /// empty) and always null for the widget-based constructor — the
+  /// constructor choice is what decides whether the bar participates in
+  /// pinning. When a shell is present these items stay put during push and
+  /// pop while the page slides beneath them, morphing in place into the next
+  /// route's items; without a shell they render inside this bar as a normal
+  /// glass capsule.
+  final List<GlassBarItem>? pinnedActions;
+
+  /// Leading bar items declared as data, pinned above the [Navigator] by an
+  /// enclosing [GlassNavigationShell].
+  ///
+  /// Set by [GlassAppBar.pinned] (its `leading` parameter, defaulting to
+  /// empty); always empty on the plain constructor, which uses the
+  /// widget-based [leading] instead.
+  final List<GlassBarItem> pinnedLeading;
+
+  /// Whether a [GlassAppBar.pinned] bar shows the automatic back button when
+  /// the route can be popped.
+  ///
+  /// The button is never shown on a root route, matching
+  /// [ModalRoute.impliesAppBarDismissal], and a non-empty [pinnedLeading]
+  /// replaces it unless [pinnedLeadingItemsSupplementBackButton] is set.
+  final bool pinnedBackButton;
+
+  /// Whether [pinnedLeading] appears in addition to the automatic back button
+  /// rather than instead of it.
+  ///
+  /// Mirrors `UINavigationItem.leftItemsSupplementBackButton`, which is
+  /// likewise false by default.
+  final bool pinnedLeadingItemsSupplementBackButton;
+
+  /// Overrides the automatic back button's action on a [GlassAppBar.pinned]
+  /// bar.
+  ///
+  /// Defaults to `Navigator.maybePop`, which routers built on the Pages API
+  /// (go_router, auto_route, beamer) handle correctly. Supply this to use a
+  /// router-specific pop instead, such as `context.pop()`.
+  final VoidCallback? onBack;
+
+  /// The total preferred size of the app bar (toolbar + bottom widget).
   @override
-  final Size preferredSize;
+  Size get preferredSize => Size.fromHeight(
+        toolbarHeight + (bottom?.preferredSize.height ?? 0.0),
+      );
 
   /// Whether this app bar fully obstructs the content behind it.
   ///
@@ -175,37 +296,80 @@ class GlassAppBar extends StatelessWidget
 
   @override
   Widget build(BuildContext context) {
-    Widget content = ColoredBox(
-      color: backgroundColor,
-      child: SafeArea(
-        bottom: false,
-        child: Padding(
-          padding: padding,
-          child: SizedBox(
-            height: preferredSize.height,
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                // Leading widget
-                if (leading != null) leading!,
+    // Pinned items are registered with the shell, which decides whether it can
+    // host them. Until then — and whenever there is no shell — this bar draws
+    // them itself, so a screen renders correctly either way.
+    if (pinnedActions != null) {
+      return GlassPinnedBarChrome(
+        leading: pinnedLeading,
+        actions: pinnedActions!,
+        backButton: pinnedBackButton,
+        leadingItemsSupplementBackButton:
+            pinnedLeadingItemsSupplementBackButton,
+        onBack: onBack,
+        buttonSettings: buttonSettings,
+        builder: (context, chrome) => _buildBar(context, chrome: chrome),
+      );
+    }
+    return _buildBar(context);
+  }
 
-                // Flexible title — optionally driven by collapse controller
-                Expanded(
-                  child: _buildTitle(),
+  /// Builds the bar itself.
+  ///
+  /// A pinned bar takes its slots from [chrome], which holds real buttons
+  /// until the shell has taken them and same-sized placeholders after — so the
+  /// centred title is constrained identically either way and keeps sliding
+  /// with the page. A widget-based bar uses its own [leading] and [actions].
+  Widget _buildBar(BuildContext context, {GlassPinnedBarChromeData? chrome}) {
+    final Widget? effectiveLeading = chrome == null ? leading : chrome.leading;
+    final List<Widget>? effectiveActions = chrome == null
+        ? actions
+        : (chrome.actions.isEmpty ? null : chrome.actions);
+
+    final Widget toolbarRow = SafeArea(
+      bottom: false,
+      child: Padding(
+        padding: padding,
+        child: SizedBox(
+          height: toolbarHeight,
+          child: CustomMultiChildLayout(
+            delegate: _ToolbarLayout(
+              centerTitle: centerTitle,
+              textDirection: Directionality.of(context),
+            ),
+            children: [
+              if (effectiveLeading != null)
+                LayoutId(
+                  id: _ToolbarSlot.leading,
+                  child: effectiveLeading,
                 ),
-
-                // Trailing actions
-                if (actions != null)
-                  Row(
+              LayoutId(
+                id: _ToolbarSlot.title,
+                child: _buildTitle(context),
+              ),
+              if (effectiveActions != null)
+                LayoutId(
+                  id: _ToolbarSlot.actions,
+                  child: Row(
                     mainAxisSize: MainAxisSize.min,
                     spacing: 8,
-                    children: actions!,
+                    children: effectiveActions,
                   ),
-              ],
-            ),
+                ),
+            ],
           ),
         ),
       ),
+    );
+
+    Widget content = ColoredBox(
+      color: backgroundColor,
+      child: bottom != null
+          ? Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [toolbarRow, bottom!],
+            )
+          : toolbarRow,
     );
 
     // Wrap with default button settings if provided.
@@ -231,21 +395,30 @@ class GlassAppBar extends StatelessWidget
 
   /// Builds the title widget, optionally driven by [largeTitleController].
   ///
-  /// Without a controller, returns the title as-is (same as before).
-  /// With a controller, wraps in [ListenableBuilder] so only the title
-  /// Opacity rebuilds on scroll — not the entire bar.
-  Widget _buildTitle() {
-    final titleWidget = centerTitle
-        ? Center(child: title ?? const SizedBox.shrink())
-        : Align(
-            alignment: Alignment.centerLeft,
-            child: Padding(
-              padding: const EdgeInsets.only(left: 8),
-              child: title ?? const SizedBox.shrink(),
-            ),
+  /// Applies [CupertinoThemeData.navTitleTextStyle] and a [Semantics] header
+  /// node — matching [CupertinoNavigationBar]'s internal behaviour so a plain
+  /// [Text] widget automatically picks up correct Cupertino typography.
+  ///
+  /// Alignment (centred vs. leading) is handled by the caller ([build]), not
+  /// here. This method is responsible only for styling and the optional
+  /// collapse-controller opacity animation.
+  ///
+  /// With a controller the result is wrapped in a [ListenableBuilder] so only
+  /// the title opacity rebuilds on scroll, not the entire bar.
+  Widget _buildTitle(BuildContext context) {
+    final Widget styledTitle = title == null
+        ? const SizedBox.shrink()
+        : DefaultTextStyle(
+            style: CupertinoTheme.of(context).textTheme.navTitleTextStyle,
+            // iOS navigation titles are a single truncated line — they never
+            // wrap, however little room the bar items leave them.
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.center,
+            child: Semantics(header: true, child: title),
           );
 
-    if (largeTitleController == null) return titleWidget;
+    if (largeTitleController == null) return styledTitle;
 
     return ListenableBuilder(
       listenable: largeTitleController!,
@@ -259,7 +432,7 @@ class GlassAppBar extends StatelessWidget
         final barOpacity = Curves.easeOut.transform(barProgress);
         return Opacity(
           opacity: barOpacity,
-          child: titleWidget,
+          child: styledTitle,
         );
       },
     );
@@ -298,4 +471,145 @@ class DefaultButtonSettings extends InheritedWidget {
   @override
   bool updateShouldNotify(DefaultButtonSettings oldWidget) =>
       settings != oldWidget.settings;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Toolbar layout
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// Identifies each child slot in [_ToolbarLayout].
+enum _ToolbarSlot { leading, title, actions }
+
+/// A [MultiChildLayoutDelegate] that matches Apple's
+/// `_CupertinoNavigationBarLayout` semantics:
+///
+/// * **Leading** — laid out at its natural size, pinned to the logical-start
+///   edge (left in LTR, right in RTL).
+/// * **Actions** — laid out at their natural size, pinned to the logical-end
+///   edge.
+/// * **Title (centred)** — constrained to
+///   `barWidth − 2 × max(leadingWidth, actionsWidth)`, then positioned so its
+///   centre coincides with `barWidth / 2`.  The equal-margin constraint
+///   guarantees the title cannot overlap either button even when the sides
+///   are asymmetric.
+/// * **Title (leading-aligned)** — constrained to the space between the
+///   leading widget and the actions widget (with an 8 px logical-start gap),
+///   then pinned to the logical-start edge of that space.
+///
+/// RTL is handled explicitly via [textDirection]; no assumptions are made
+/// about screen vs. logical coordinates.
+class _ToolbarLayout extends MultiChildLayoutDelegate {
+  _ToolbarLayout({
+    required this.centerTitle,
+    required this.textDirection,
+  });
+
+  final bool centerTitle;
+  final TextDirection textDirection;
+
+  /// Horizontal gap between the leading widget and the title.
+  static const double _titleGap = 8.0;
+
+  bool get _isLTR => textDirection == TextDirection.ltr;
+
+  /// Returns the y-offset that vertically centres [child] inside [parent].
+  static double _centreY(Size parent, Size child) =>
+      ((parent.height - child.height) / 2.0).clamp(0.0, parent.height);
+
+  @override
+  void performLayout(Size size) {
+    double leadingWidth = 0.0;
+    double actionsWidth = 0.0;
+
+    // ── Leading ──────────────────────────────────────────────────────────────
+    if (hasChild(_ToolbarSlot.leading)) {
+      final Size ls = layoutChild(
+        _ToolbarSlot.leading,
+        BoxConstraints.loose(size),
+      );
+      leadingWidth = ls.width;
+      positionChild(
+        _ToolbarSlot.leading,
+        Offset(
+          _isLTR ? 0.0 : size.width - ls.width,
+          _centreY(size, ls),
+        ),
+      );
+    }
+
+    // ── Actions ──────────────────────────────────────────────────────────────
+    if (hasChild(_ToolbarSlot.actions)) {
+      final Size as = layoutChild(
+        _ToolbarSlot.actions,
+        BoxConstraints.loose(size),
+      );
+      actionsWidth = as.width;
+      positionChild(
+        _ToolbarSlot.actions,
+        Offset(
+          _isLTR ? size.width - as.width : 0.0,
+          _centreY(size, as),
+        ),
+      );
+    }
+
+    // ── Title ─────────────────────────────────────────────────────────────────
+    if (!hasChild(_ToolbarSlot.title)) return;
+
+    if (centerTitle) {
+      // Equal-margin constraint: widen the narrower side so both margins
+      // equal the larger one.  This prevents the centred title from ever
+      // reaching either button group.
+      final double sideWidth = math.max(leadingWidth, actionsWidth);
+      final double maxWidth = math.max(0.0, size.width - 2.0 * sideWidth);
+
+      final Size ts = layoutChild(
+        _ToolbarSlot.title,
+        BoxConstraints(maxWidth: maxWidth, maxHeight: size.height),
+      );
+
+      // Centre on the full bar width (not just the constrained zone).
+      positionChild(
+        _ToolbarSlot.title,
+        Offset(
+          (size.width - ts.width) / 2.0,
+          _centreY(size, ts),
+        ),
+      );
+    } else {
+      // Leading-aligned: title occupies the space between the two side widgets
+      // with an 8 px gap when adjacent to a leading or action widget.
+      //
+      // In both LTR and RTL:
+      //   - leading is positioned at the logical-start edge (0 in LTR, width - leadingWidth in RTL).
+      //   - actions is positioned at the logical-end edge (width - actionsWidth in LTR, 0 in RTL).
+      final double startOccupied = leadingWidth;
+      final double endOccupied = actionsWidth;
+      final double startGap = startOccupied > 0 ? _titleGap : 0.0;
+      final double endGap = endOccupied > 0 ? _titleGap : 0.0;
+      final double maxWidth = math.max(
+        0.0,
+        size.width - startOccupied - startGap - endOccupied - endGap,
+      );
+
+      final Size ts = layoutChild(
+        _ToolbarSlot.title,
+        BoxConstraints(maxWidth: maxWidth, maxHeight: size.height),
+      );
+
+      // Pin to logical-start edge (left in LTR, right in RTL).
+      final double titleX = _isLTR
+          ? startOccupied + startGap
+          : size.width - startOccupied - startGap - ts.width;
+
+      positionChild(
+        _ToolbarSlot.title,
+        Offset(titleX, _centreY(size, ts)),
+      );
+    }
+  }
+
+  @override
+  bool shouldRelayout(_ToolbarLayout old) =>
+      old.centerTitle != centerTitle || old.textDirection != textDirection;
 }

@@ -11,6 +11,7 @@ library;
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+
 import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 
 void main() async {
@@ -95,11 +96,11 @@ class _ShadowClippingDemoPageState extends State<ShadowClippingDemoPage> {
           whitenAtBottom: true,
           tabs: [
             GlassTab(
-              icon: const Icon(CupertinoIcons.house),
+              icon: Icon(CupertinoIcons.house),
               label: 'Home',
             ),
             GlassTab(
-              icon: const Icon(CupertinoIcons.compass),
+              icon: Icon(CupertinoIcons.compass),
               label: 'Discover',
             ),
           ],
@@ -113,28 +114,28 @@ class _ShadowClippingDemoPageState extends State<ShadowClippingDemoPage> {
           child: SafeArea(
             child: SingleChildScrollView(
               controller: _scrollController,
-              padding: const EdgeInsets.all(32),
+              padding: EdgeInsets.all(32),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  const Text(
+                  Text(
                     'Premium Buttons with Elevations',
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
-                      color: Colors.black87,
+                      color: CupertinoColors.black.withValues(alpha: 0.87),
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  const Text(
+                  SizedBox(height: 8),
+                  Text(
                     'Shadows should visibly expand around the buttons and not be cut off at the edge.',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 14,
-                      color: Colors.black54,
+                      color: CupertinoColors.black.withValues(alpha: 0.54),
                     ),
                   ),
-                  const SizedBox(height: 48),
+                  SizedBox(height: 48),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
@@ -143,16 +144,16 @@ class _ShadowClippingDemoPageState extends State<ShadowClippingDemoPage> {
                       _ElevatedButton(elevation: 4.0),
                     ],
                   ),
-                  const SizedBox(height: 64),
-                  const Text(
+                  SizedBox(height: 64),
+                  Text(
                     'Glass Menu',
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
-                      color: Colors.black87,
+                      color: CupertinoColors.black.withValues(alpha: 0.87),
                     ),
                   ),
-                  const SizedBox(height: 24),
+                  SizedBox(height: 24),
                   Center(
                     child: GlassMenu(
                       settings: const LiquidGlassSettings(
@@ -164,29 +165,30 @@ class _ShadowClippingDemoPageState extends State<ShadowClippingDemoPage> {
                       items: [
                         GlassMenuItem(
                           title: 'Option 1',
-                          icon: const Icon(CupertinoIcons.star),
+                          icon: Icon(CupertinoIcons.star),
                           onTap: () {},
                         ),
                         GlassMenuItem(
                           title: 'Option 2',
-                          icon: const Icon(CupertinoIcons.heart),
+                          icon: Icon(CupertinoIcons.heart),
                           onTap: () {},
                         ),
                         GlassMenuItem(
                           title: 'Option 3',
-                          titleStyle: const TextStyle(
-                              color: CupertinoColors.destructiveRed),
-                          icon: const Icon(CupertinoIcons.delete,
+                          titleStyle:
+                              TextStyle(color: CupertinoColors.destructiveRed),
+                          icon: Icon(CupertinoIcons.trash,
                               color: CupertinoColors.destructiveRed),
                           onTap: () {},
                         ),
                       ],
                       triggerBuilder: (context, toggle) => GlassButton(
-                        icon: const Icon(CupertinoIcons.ellipsis),
+                        icon: Icon(CupertinoIcons.ellipsis),
                         width: 56,
                         height: 56,
                         iconSize: 24,
-                        iconColor: Colors.black87,
+                        iconColor:
+                            CupertinoColors.black.withValues(alpha: 0.87),
                         onTap: toggle, // Correctly wire up the toggle function
                         useOwnLayer: true, // Required for standalone shadows
                         settings: const LiquidGlassSettings(
@@ -197,16 +199,16 @@ class _ShadowClippingDemoPageState extends State<ShadowClippingDemoPage> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 64),
-                  const Text(
+                  SizedBox(height: 64),
+                  Text(
                     'Button Groups',
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
-                      color: Colors.black87,
+                      color: CupertinoColors.black.withValues(alpha: 0.87),
                     ),
                   ),
-                  const SizedBox(height: 24),
+                  SizedBox(height: 24),
                   GlassButtonGroup.icons(
                     direction: Axis.horizontal,
                     quality: GlassQuality.premium,
@@ -216,29 +218,29 @@ class _ShadowClippingDemoPageState extends State<ShadowClippingDemoPage> {
                     ),
                     items: [
                       GlassButtonGroupItem(
-                        icon: const Icon(CupertinoIcons.reply),
+                        icon: Icon(CupertinoIcons.reply),
                         onTap: () {},
                       ),
                       GlassButtonGroupItem(
-                        icon: const Icon(CupertinoIcons.heart),
+                        icon: Icon(CupertinoIcons.heart),
                         onTap: () {},
                       ),
                       GlassButtonGroupItem(
-                        icon: const Icon(CupertinoIcons.share),
+                        icon: Icon(CupertinoIcons.share),
                         onTap: () {},
                       ),
                     ],
                   ),
-                  const SizedBox(height: 64),
-                  const Text(
+                  SizedBox(height: 64),
+                  Text(
                     'Wide Button',
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
-                      color: Colors.black87,
+                      color: CupertinoColors.black.withValues(alpha: 0.87),
                     ),
                   ),
-                  const SizedBox(height: 24),
+                  SizedBox(height: 24),
                   GlassButton.custom(
                     width: 300,
                     height: 64,
@@ -253,41 +255,44 @@ class _ShadowClippingDemoPageState extends State<ShadowClippingDemoPage> {
                       glassColor: Color(0x99FFFFFF),
                     ),
                     quality: GlassQuality.premium,
-                    child: const Text(
+                    child: Text(
                       'Wide Button with Shadow',
                       style: TextStyle(
-                        color: Colors.black87,
+                        color: CupertinoColors.black.withValues(alpha: 0.87),
                         fontWeight: FontWeight.w600,
                         fontSize: 16,
                       ),
                     ),
                   ),
-                  const SizedBox(height: 64),
+                  SizedBox(height: 64),
                   // ── Whiten Strength slider ──────────────────────────
-                  const Text(
+                  Text(
                     'Whiten Strength (Legibility Veil)',
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
-                      color: Colors.black87,
+                      color: CupertinoColors.black.withValues(alpha: 0.87),
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  const Text(
+                  SizedBox(height: 8),
+                  Text(
                     'Drag the slider to lift the bottom bar toward white. '
                     'Scroll to the bottom to see the whiten-at-bottom boost.',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 14,
-                      color: Colors.black54,
+                      color: CupertinoColors.black.withValues(alpha: 0.54),
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16),
                   Row(
                     children: [
-                      const Text(
+                      Text(
                         '0.0',
-                        style: TextStyle(fontSize: 13, color: Colors.black54),
+                        style: TextStyle(
+                            fontSize: 13,
+                            color:
+                                CupertinoColors.black.withValues(alpha: 0.54)),
                       ),
                       Expanded(
                         child: CupertinoSlider(
@@ -297,21 +302,24 @@ class _ShadowClippingDemoPageState extends State<ShadowClippingDemoPage> {
                           onChanged: (v) => setState(() => _whitenStrength = v),
                         ),
                       ),
-                      const Text(
+                      Text(
                         '1.0',
-                        style: TextStyle(fontSize: 13, color: Colors.black54),
+                        style: TextStyle(
+                            fontSize: 13,
+                            color:
+                                CupertinoColors.black.withValues(alpha: 0.54)),
                       ),
                     ],
                   ),
                   Text(
                     'whitenStrength: ${_whitenStrength.toStringAsFixed(2)}',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
-                      color: Colors.black87,
+                      color: CupertinoColors.black.withValues(alpha: 0.87),
                     ),
                   ),
-                  const SizedBox(height: 24),
+                  SizedBox(height: 24),
                   // Side-by-side comparison cards
                   Row(
                     children: [
@@ -321,7 +329,7 @@ class _ShadowClippingDemoPageState extends State<ShadowClippingDemoPage> {
                           whitenStrength: _whitenStrength,
                         ),
                       ),
-                      const SizedBox(width: 16),
+                      SizedBox(width: 16),
                       Expanded(
                         child: _WhitenCard(
                           label: 'No Whiten',
@@ -332,18 +340,18 @@ class _ShadowClippingDemoPageState extends State<ShadowClippingDemoPage> {
                   ),
                   // Extra height so the page is scrollable to trigger
                   // the whiten-at-bottom boost on the bar.
-                  const SizedBox(height: 200),
-                  const Center(
+                  SizedBox(height: 200),
+                  Center(
                     child: Text(
                       '↓ Scroll here to trigger whiten-at-bottom ↓',
                       style: TextStyle(
                         fontSize: 13,
-                        color: Colors.black38,
+                        color: CupertinoColors.black.withValues(alpha: 0.38),
                         fontStyle: FontStyle.italic,
                       ),
                     ),
                   ),
-                  const SizedBox(height: 120),
+                  SizedBox(height: 120),
                 ],
               ),
             ),
@@ -364,14 +372,14 @@ class _ElevatedButton extends StatelessWidget {
     return Column(
       children: [
         GlassButton(
-          icon: const Icon(Icons.favorite),
+          icon: Icon(CupertinoIcons.heart_fill),
           width: 64,
           height: 64,
           iconSize: 28,
           quality: GlassQuality.premium,
           useOwnLayer:
               true, // Required for standalone shadows in premium quality
-          iconColor: Colors.black87,
+          iconColor: CupertinoColors.black.withValues(alpha: 0.87),
           onTap: () {},
           settings: LiquidGlassSettings(
             shadowElevation: elevation,
@@ -380,11 +388,11 @@ class _ElevatedButton extends StatelessWidget {
             glassColor: const Color(0x99FFFFFF), // Make glass visible
           ),
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: 16),
         Text(
           'Elev $elevation',
-          style: const TextStyle(
-            color: Colors.black54,
+          style: TextStyle(
+            color: CupertinoColors.black.withValues(alpha: 0.54),
             fontWeight: FontWeight.w600,
             fontSize: 14,
           ),
@@ -418,7 +426,7 @@ class _WhitenCard extends StatelessWidget {
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(16),
                   child: Container(
-                    decoration: const BoxDecoration(
+                    decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
                           Color(0xFFFF6B6B),
@@ -427,13 +435,13 @@ class _WhitenCard extends StatelessWidget {
                         ],
                       ),
                     ),
-                    child: const Center(
+                    child: Center(
                       child: Text(
                         'Content Behind Glass',
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                          color: CupertinoColors.white,
                         ),
                       ),
                     ),
@@ -456,20 +464,20 @@ class _WhitenCard extends StatelessWidget {
             ],
           ),
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: 8),
         Text(
           label,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 13,
             fontWeight: FontWeight.w600,
-            color: Colors.black54,
+            color: CupertinoColors.black.withValues(alpha: 0.54),
           ),
         ),
         Text(
           whitenStrength.toStringAsFixed(2),
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 12,
-            color: Colors.black38,
+            color: CupertinoColors.black.withValues(alpha: 0.38),
           ),
         ),
       ],

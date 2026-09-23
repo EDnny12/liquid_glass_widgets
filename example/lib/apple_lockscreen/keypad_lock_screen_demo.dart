@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 
@@ -22,10 +21,6 @@ void main() async {
     child: CupertinoApp(
       debugShowCheckedModeBanner: false,
       theme: const CupertinoThemeData(brightness: Brightness.dark),
-      builder: (context, child) => Theme(
-        data: ThemeData.dark(useMaterial3: true),
-        child: child!,
-      ),
       home: const KeypadLockScreenDemo(),
     ),
   ));
@@ -142,7 +137,7 @@ class _KeypadLockScreenDemoState extends State<KeypadLockScreenDemo>
             image: AssetImage('assets/bulldog.jpeg'),
             fit: BoxFit.cover,
             colorFilter: ColorFilter.mode(
-              Colors.black
+              CupertinoColors.black
                   .withValues(alpha: 0.3), // Adjust opacity for darkness
               BlendMode.darken, // Or BlendMode.srcOver for a solid overlay
             ),
@@ -150,8 +145,8 @@ class _KeypadLockScreenDemoState extends State<KeypadLockScreenDemo>
           ),
         ),
       ),
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
+      child: GlassScaffold(
+        backgroundColor: const Color(0x00000000),
         body: SafeArea(
           child: Column(
             children: [
@@ -208,12 +203,12 @@ class _KeypadLockScreenDemoState extends State<KeypadLockScreenDemo>
 
   Widget _buildStatusBar() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.08),
+        color: CupertinoColors.white.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(30),
         border: Border.all(
-          color: Colors.white.withValues(alpha: 0.15),
+          color: CupertinoColors.white.withValues(alpha: 0.15),
           width: 0.5,
         ),
       ),
@@ -222,13 +217,13 @@ class _KeypadLockScreenDemoState extends State<KeypadLockScreenDemo>
         children: [
           Icon(
             CupertinoIcons.lock,
-            color: Colors.white.withValues(alpha: 0.9),
+            color: CupertinoColors.white.withValues(alpha: 0.9),
             size: 16,
           ),
-          const SizedBox(width: 24),
+          SizedBox(width: 24),
           Icon(
             CupertinoIcons.smiley,
-            color: Colors.green.withValues(alpha: 0.9),
+            color: CupertinoColors.activeGreen.withValues(alpha: 0.9),
             size: 22,
           ),
         ],
@@ -242,7 +237,7 @@ class _KeypadLockScreenDemoState extends State<KeypadLockScreenDemo>
         Text(
           'Swipe up for Face ID or',
           style: TextStyle(
-            color: Colors.white.withValues(alpha: 0.9),
+            color: CupertinoColors.white.withValues(alpha: 0.9),
             fontSize: 16,
             fontWeight: FontWeight.w400,
             letterSpacing: -0.2,
@@ -251,7 +246,7 @@ class _KeypadLockScreenDemoState extends State<KeypadLockScreenDemo>
         Text(
           'Enter Passcode',
           style: TextStyle(
-            color: Colors.white.withValues(alpha: 0.9),
+            color: CupertinoColors.white.withValues(alpha: 0.9),
             fontSize: 16,
             fontWeight: FontWeight.w400,
             letterSpacing: -0.2,
@@ -269,17 +264,18 @@ class _KeypadLockScreenDemoState extends State<KeypadLockScreenDemo>
         return AnimatedContainer(
           duration: const Duration(milliseconds: 150),
           curve: Curves.easeOut,
-          margin: const EdgeInsets.symmetric(horizontal: 8),
+          margin: EdgeInsets.symmetric(horizontal: 8),
           width: isFilled ? 14 : 13,
           height: isFilled ? 14 : 13,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: isFilled
-                ? (_isError ? Colors.red : Colors.white)
-                : Colors.transparent,
+                ? (_isError ? CupertinoColors.systemRed : CupertinoColors.white)
+                : const Color(0x00000000),
             border: Border.all(
-              color:
-                  _isError ? Colors.red : Colors.white.withValues(alpha: 0.8),
+              color: _isError
+                  ? CupertinoColors.systemRed
+                  : CupertinoColors.white.withValues(alpha: 0.8),
               width: 1.5,
             ),
           ),
@@ -301,19 +297,19 @@ class _KeypadLockScreenDemoState extends State<KeypadLockScreenDemo>
     };
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 40),
+      padding: EdgeInsets.symmetric(horizontal: 40),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           // Row 1: 1, 2, 3
           _buildKeyRow([1, 2, 3], subtitles),
-          const SizedBox(height: 14),
+          SizedBox(height: 14),
           // Row 2: 4, 5, 6
           _buildKeyRow([4, 5, 6], subtitles),
-          const SizedBox(height: 14),
+          SizedBox(height: 14),
           // Row 3: 7, 8, 9
           _buildKeyRow([7, 8, 9], subtitles),
-          const SizedBox(height: 14),
+          SizedBox(height: 14),
           // Row 4: _, 0, delete
           _buildBottomKeyRow(),
         ],
@@ -339,7 +335,7 @@ class _KeypadLockScreenDemoState extends State<KeypadLockScreenDemo>
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
         // Empty space where a button would be
-        const SizedBox(width: 80, height: 80),
+        SizedBox(width: 80, height: 80),
 
         // 0 button
         _KeypadButton(
@@ -356,8 +352,8 @@ class _KeypadLockScreenDemoState extends State<KeypadLockScreenDemo>
             behavior: HitTestBehavior.opaque,
             child: Center(
               child: Icon(
-                CupertinoIcons.delete_left,
-                color: Colors.white.withValues(alpha: 0.9),
+                CupertinoIcons.trash,
+                color: CupertinoColors.white.withValues(alpha: 0.9),
                 size: 24,
               ),
             ),
@@ -369,7 +365,7 @@ class _KeypadLockScreenDemoState extends State<KeypadLockScreenDemo>
 
   Widget _buildBottomActions() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 60),
+      padding: EdgeInsets.symmetric(horizontal: 60),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -378,7 +374,7 @@ class _KeypadLockScreenDemoState extends State<KeypadLockScreenDemo>
             child: Text(
               'Emergency',
               style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.85),
+                color: CupertinoColors.white.withValues(alpha: 0.85),
                 fontSize: 16,
                 fontWeight: FontWeight.w400,
               ),
@@ -389,7 +385,7 @@ class _KeypadLockScreenDemoState extends State<KeypadLockScreenDemo>
             child: Text(
               'Cancel',
               style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.85),
+                color: CupertinoColors.white.withValues(alpha: 0.85),
                 fontSize: 16,
                 fontWeight: FontWeight.w400,
               ),
@@ -443,8 +439,8 @@ class _KeypadButton extends StatelessWidget {
         children: [
           Text(
             '$digit',
-            style: const TextStyle(
-              color: Colors.white,
+            style: TextStyle(
+              color: CupertinoColors.white,
               fontSize: 34,
               fontWeight: FontWeight.w300,
               letterSpacing: -0.5,
@@ -452,11 +448,11 @@ class _KeypadButton extends StatelessWidget {
             ),
           ),
           if (subtitle != null) ...[
-            const SizedBox(height: 1),
+            SizedBox(height: 1),
             Text(
               subtitle!,
               style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.8),
+                color: CupertinoColors.white.withValues(alpha: 0.8),
                 fontSize: 10,
                 fontWeight: FontWeight.w600,
                 letterSpacing: 2.0,

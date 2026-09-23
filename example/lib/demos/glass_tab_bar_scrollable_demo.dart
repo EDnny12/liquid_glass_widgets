@@ -6,6 +6,7 @@
 // on the interactive elements (GlassButton), not the bar surface.
 
 import 'package:flutter/cupertino.dart';
+
 import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 
 Future<void> main() async {
@@ -48,7 +49,7 @@ class _TabBarScrollableHomeState extends State<TabBarScrollableHome> {
     return CupertinoPageScaffold(
       // GlassAppBar: iOS 26-correct — transparent bar, glass on the buttons.
       navigationBar: GlassAppBar(
-        title: const Text(
+        title: Text(
           'GlassTabBar — Scrollable',
           style: TextStyle(
             color: CupertinoColors.label,
@@ -58,7 +59,7 @@ class _TabBarScrollableHomeState extends State<TabBarScrollableHome> {
         ),
         actions: [
           GlassButton(
-            icon: const Icon(CupertinoIcons.add),
+            icon: Icon(CupertinoIcons.add),
             onTap: _addTab,
           ),
         ],
@@ -70,7 +71,7 @@ class _TabBarScrollableHomeState extends State<TabBarScrollableHome> {
             children: [
               // Scrollable GlassTabBar — grows horizontally as tabs are added.
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                padding: EdgeInsets.symmetric(horizontal: 16.0),
                 child: GlassSegmentedControl.scrollable(
                   quality: GlassQuality.premium,
                   selectedIndex: _selectedIndex,
@@ -81,15 +82,15 @@ class _TabBarScrollableHomeState extends State<TabBarScrollableHome> {
                   ),
                 ),
               ),
-              const SizedBox(height: 32),
+              SizedBox(height: 32),
               Text(
                 'Tabs: $_tabCount   ·   Selected: ${_selectedIndex + 1}',
-                style: const TextStyle(
+                style: TextStyle(
                   color: CupertinoColors.secondaryLabel,
                   fontSize: 15,
                 ),
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: 8),
               Text(
                 'Tap + to add tabs',
                 style: TextStyle(

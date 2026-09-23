@@ -31,7 +31,7 @@ class GlassPasswordField extends StatefulWidget {
     this.settings,
     this.useOwnLayer = false,
     this.quality = GlassQuality.standard,
-    this.shape = const LiquidRoundedSuperellipse(borderRadius: 10),
+    this.shape = const LiquidRoundedRectangle(borderRadius: 10),
     // ── iOS 26 interaction ────────────────────────────────────────────────
     this.interactionBehavior = GlassInteractionBehavior.full,
     this.pressScale = 1.03,
@@ -147,10 +147,16 @@ class _GlassPasswordFieldState extends State<GlassPasswordField> {
         size: 20,
         color: CupertinoColors.secondaryLabel.resolveFrom(context),
       ),
-      suffixIcon: Icon(
-        _obscureText ? CupertinoIcons.eye_slash_fill : CupertinoIcons.eye_fill,
-        size: 20,
-        color: CupertinoColors.secondaryLabel.resolveFrom(context),
+      suffixIcon: Semantics(
+        label: _obscureText ? 'Show password' : 'Hide password',
+        button: true,
+        child: Icon(
+          _obscureText
+              ? CupertinoIcons.eye_slash_fill
+              : CupertinoIcons.eye_fill,
+          size: 20,
+          color: CupertinoColors.secondaryLabel.resolveFrom(context),
+        ),
       ),
       onSuffixTap: () {
         setState(() {

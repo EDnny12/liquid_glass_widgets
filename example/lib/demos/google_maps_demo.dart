@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
+
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 
@@ -64,18 +64,19 @@ class _PlatformViewDemoState extends State<PlatformViewDemo> {
       // │  native views while maintaining the premium indicator.        │
       // └─────────────────────────────────────────────────────────────────┘
       bottomBar: GlassTabBar.searchable(
-        settings: const LiquidGlassSettings(glassColor: Colors.black26),
+        settings: LiquidGlassSettings(
+            glassColor: CupertinoColors.black.withValues(alpha: 0.26)),
         quality: GlassQuality.premium,
         platformViewBackdrop: Platform.isIOS,
         isSearchActive: _searchActive,
-        selectedIconColor: Colors.white,
-        unselectedIconColor: Colors.white70,
-        selectedLabelColor: Colors.white,
-        unselectedLabelColor: Colors.white70,
+        selectedIconColor: CupertinoColors.white,
+        unselectedIconColor: CupertinoColors.white.withValues(alpha: 0.70),
+        selectedLabelColor: CupertinoColors.white,
+        unselectedLabelColor: CupertinoColors.white.withValues(alpha: 0.70),
         searchConfig: GlassSearchBarConfig(
           onSearchToggle: (active) => setState(() => _searchActive = active),
-          // Dark glass (glassColor: Colors.black26) needs explicit white icons.
-          searchIconColor: Colors.white,
+          // Dark glass (glassColor: CupertinoColors.black.withValues(alpha: 0.26)) needs explicit white icons.
+          searchIconColor: CupertinoColors.white,
         ),
         selectedIndex: _selectedIndex,
         onTabSelected: _onTabSelected,
@@ -117,7 +118,7 @@ class _MapTabState extends State<MapTab> with AutomaticKeepAliveClientMixin {
     super.initState();
     _controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setBackgroundColor(Colors.black)
+      ..setBackgroundColor(CupertinoColors.black)
       ..loadRequest(
         Uri.parse('https://www.openstreetmap.org/#map=13/37.7749/-122.4194'),
       );

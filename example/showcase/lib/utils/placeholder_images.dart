@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 
 /// Placeholder gradient images for testing before adding real photos
 ///
@@ -108,9 +108,9 @@ class PlaceholderImages {
       ),
       child: Center(
         child: Icon(
-          Icons.image_outlined,
+          CupertinoIcons.photo,
           size: 80,
-          color: Colors.white.withValues(alpha: 0.3),
+          color: CupertinoColors.white.withValues(alpha: 0.3),
         ),
       ),
     );

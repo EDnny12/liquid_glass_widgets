@@ -1,8 +1,8 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:liquid_glass_widgets/types/glass_quality.dart';
-import 'package:liquid_glass_widgets/widgets/shared/indicator_deformation_scope.dart';
-import 'package:liquid_glass_widgets/widgets/surfaces/shared/tab_indicator_motion.dart';
+import 'package:liquid_glass_widgets/src/widgets/indicator_deformation_scope.dart';
+import 'package:liquid_glass_widgets/src/widgets/surfaces/tab_indicator_motion.dart';
 
 class _Sample {
   _Sample(this.position, this.velocity, this.thickness, Matrix4 transform)
@@ -26,39 +26,41 @@ class _Harness {
   late _Sample sample;
   int builds = 0;
 
-  Widget build() => StatefulBuilder(builder: (context, setState) {
-        update = setState;
-        return MediaQuery(
-          data: MediaQueryData(disableAnimations: reduceMotion),
-          child: Directionality(
-            textDirection: TextDirection.ltr,
-            child: TickerMode(
-              enabled: tickersEnabled,
-              child: Center(
-                child: SizedBox(
-                  width: 400,
-                  height: 64,
-                  child: TabIndicatorMotion(
-                    target: target,
-                    pressed: pressed,
-                    dragging: dragging,
-                    visible: visible,
-                    itemCount: 4,
-                    quality: GlassQuality.premium,
-                    releaseSpring: spring,
-                    builder: (_, position, velocity, thickness, transform) {
-                      builds++;
-                      sample =
-                          _Sample(position, velocity, thickness, transform);
-                      return const SizedBox.expand();
-                    },
+  Widget build() => StatefulBuilder(
+        builder: (context, setState) {
+          update = setState;
+          return MediaQuery(
+            data: MediaQueryData(disableAnimations: reduceMotion),
+            child: Directionality(
+              textDirection: TextDirection.ltr,
+              child: TickerMode(
+                enabled: tickersEnabled,
+                child: Center(
+                  child: SizedBox(
+                    width: 400,
+                    height: 64,
+                    child: TabIndicatorMotion(
+                      target: target,
+                      pressed: pressed,
+                      dragging: dragging,
+                      visible: visible,
+                      itemCount: 4,
+                      quality: GlassQuality.premium,
+                      releaseSpring: spring,
+                      builder: (_, position, velocity, thickness, transform) {
+                        builds++;
+                        sample =
+                            _Sample(position, velocity, thickness, transform);
+                        return const SizedBox.expand();
+                      },
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
-        );
-      });
+          );
+        },
+      );
 }
 
 void main() {
@@ -82,8 +84,9 @@ void main() {
 
   for (final target in [-1 / 3, 1.0]) {
     for (final frameMs in [8, 16]) {
-      testWidgets('travel to $target at ${frameMs}ms recovers then stops',
-          (tester) async {
+      testWidgets('travel to $target at ${frameMs}ms recovers then stops', (
+        tester,
+      ) async {
         final harness = _Harness();
         await tester.pumpWidget(harness.build());
         expect(tester.binding.transientCallbackCount, 0);
@@ -97,15 +100,21 @@ void main() {
           samples.add(harness.sample);
         }
         expect(samples.any((s) => s.deformation > 0.01), isTrue);
-        expect(samples.any((s) => s.deformation < -0.01), isTrue,
-            reason: 'shape must recover through neutral, not only track speed');
         expect(
-            samples.any((s) =>
+          samples.any((s) => s.deformation < -0.01),
+          isTrue,
+          reason: 'shape must recover through neutral, not only track speed',
+        );
+        expect(
+          samples.any(
+            (s) =>
                 (s.position - target).abs() < 0.001 &&
                 s.deformation.abs() > 0.001 &&
-                s.thickness > 0.95),
-            isTrue,
-            reason: 'lens remains active during residual shape recovery');
+                s.thickness > 0.95,
+          ),
+          isTrue,
+          reason: 'lens remains active during residual shape recovery',
+        );
         expect(harness.sample.position, target);
         expect(harness.sample.deformation, 0);
         expect(harness.sample.thickness, 0);
@@ -118,8 +127,9 @@ void main() {
     }
   }
 
-  testWidgets('rapid reverse preserves position, velocity and deformation',
-      (tester) async {
+  testWidgets('rapid reverse preserves position, velocity and deformation', (
+    tester,
+  ) async {
     final harness = _Harness();
     await tester.pumpWidget(harness.build());
     harness.update(() => harness.target = 1);
@@ -135,15 +145,18 @@ void main() {
     expect(harness.sample.deformation, before.deformation);
     await tester.pump(const Duration(milliseconds: 16));
     expect(
-        (harness.sample.deformation - before.deformation).abs(), lessThan(.2));
+      (harness.sample.deformation - before.deformation).abs(),
+      lessThan(.2),
+    );
     await tester.pumpAndSettle(const Duration(milliseconds: 16));
     expect(harness.sample.position, -1);
     expect(harness.sample.deformation, 0);
     expect(harness.sample.thickness, 0);
   });
 
-  testWidgets('crossing destination at speed does not retire the lens',
-      (tester) async {
+  testWidgets('crossing destination at speed does not retire the lens', (
+    tester,
+  ) async {
     final harness = _Harness()
       ..spring = SpringDescription.withDurationAndBounce(
         duration: const Duration(milliseconds: 350),
@@ -170,8 +183,9 @@ void main() {
     await tester.pumpAndSettle();
   });
 
-  testWidgets('press and dragging over selected tab keep the lens active',
-      (tester) async {
+  testWidgets('press and dragging over selected tab keep the lens active', (
+    tester,
+  ) async {
     final harness = _Harness();
     await tester.pumpWidget(harness.build());
     harness.update(() => harness.pressed = true);
@@ -188,8 +202,9 @@ void main() {
     expect(harness.sample.thickness, 0);
   });
 
-  testWidgets('Reduce Motion snaps an active animation and future changes',
-      (tester) async {
+  testWidgets('Reduce Motion snaps an active animation and future changes', (
+    tester,
+  ) async {
     final harness = _Harness();
     await tester.pumpWidget(harness.build());
     harness.update(() => harness.target = 1);
@@ -210,8 +225,9 @@ void main() {
     expect(tester.binding.transientCallbackCount, 0);
   });
 
-  testWidgets('TickerMode mutes work and animation settles after resuming',
-      (tester) async {
+  testWidgets('TickerMode mutes work and animation settles after resuming', (
+    tester,
+  ) async {
     final harness = _Harness();
     await tester.pumpWidget(harness.build());
     harness.update(() => harness.target = 1);
@@ -230,8 +246,9 @@ void main() {
     expect(harness.sample.thickness, 0);
   });
 
-  testWidgets('hidden material retires and disposal cancels all tickers',
-      (tester) async {
+  testWidgets('hidden material retires and disposal cancels all tickers', (
+    tester,
+  ) async {
     final harness = _Harness();
     await tester.pumpWidget(harness.build());
     harness.update(() {

@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
+
 import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import 'package:liquid_glass_widgets_example/constants/glass_settings.dart';
 
@@ -53,18 +53,8 @@ class _FeedbackPageState extends State<FeedbackPage> {
       statusBarStyle: CupertinoTheme.of(context).brightness == Brightness.dark
           ? GlassStatusBarStyle.light
           : GlassStatusBarStyle.dark,
-      child: Scaffold(
-        extendBodyBehindAppBar: true,
-        appBar: GlassAppBar(
-          leading: GlassButton(
-            quality: GlassQuality.premium,
-            icon: Icon(CupertinoIcons.back),
-            onTap: () => Navigator.of(context).pop(),
-            width: 40,
-            height: 40,
-            iconSize: 20,
-          ),
-        ),
+      child: GlassScaffold(
+        appBar: const GlassAppBar.pinned(),
         body: GlassScrollEdgeEffect(
           topFadeHeight: MediaQuery.paddingOf(context).top + 44 + 40,
           fadeBottom: false,
@@ -93,7 +83,7 @@ class _FeedbackPageState extends State<FeedbackPage> {
               ),
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.all(24.0),
+                  padding: EdgeInsets.all(24.0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -139,16 +129,15 @@ class _FeedbackPageState extends State<FeedbackPage> {
                             value: _circularProgress,
                             size: 40.0,
                             strokeWidth: 4.0,
-                            color: Colors.green,
+                            color: CupertinoColors.activeGreen,
                           ),
                         ],
                       ),
                       SizedBox(height: 16),
-                      Slider(
+                      CupertinoSlider(
                         value: _circularProgress,
                         onChanged: (v) => setState(() => _circularProgress = v),
                         activeColor: const Color(0xFF007AFF),
-                        inactiveColor: Colors.white24,
                       ),
                       SizedBox(height: 12),
                       Row(
@@ -183,7 +172,7 @@ class _FeedbackPageState extends State<FeedbackPage> {
                             label: 'Success',
                             child: GlassProgressIndicator.circular(
                               value: 0.7,
-                              color: Colors.green,
+                              color: CupertinoColors.activeGreen,
                               size: 32.0,
                               strokeWidth: 3.0,
                             ),
@@ -192,7 +181,7 @@ class _FeedbackPageState extends State<FeedbackPage> {
                             label: 'Warning',
                             child: GlassProgressIndicator.circular(
                               value: 0.7,
-                              color: Colors.orange,
+                              color: CupertinoColors.activeOrange,
                               size: 32.0,
                               strokeWidth: 3.0,
                             ),
@@ -201,7 +190,7 @@ class _FeedbackPageState extends State<FeedbackPage> {
                             label: 'Error',
                             child: GlassProgressIndicator.circular(
                               value: 0.7,
-                              color: Colors.red,
+                              color: CupertinoColors.systemRed,
                               size: 32.0,
                               strokeWidth: 3.0,
                             ),
@@ -235,11 +224,10 @@ class _FeedbackPageState extends State<FeedbackPage> {
                         ],
                       ),
                       SizedBox(height: 16),
-                      Slider(
+                      CupertinoSlider(
                         value: _linearProgress,
                         onChanged: (v) => setState(() => _linearProgress = v),
                         activeColor: const Color(0xFF007AFF),
-                        inactiveColor: Colors.white24,
                       ),
 
                       SizedBox(height: 40),
@@ -253,13 +241,12 @@ class _FeedbackPageState extends State<FeedbackPage> {
                         children: [
                           _ToastButton(
                             label: 'Success',
-                            icon: CupertinoIcons.check_mark_circled_solid,
+                            icon: CupertinoIcons.check_mark_circled,
                             onTap: () => GlassToast.show(
                               context,
                               message: 'Settings saved successfully!',
                               type: GlassToastType.success,
-                              icon:
-                                  Icon(CupertinoIcons.check_mark_circled_solid),
+                              icon: Icon(CupertinoIcons.check_mark_circled),
                               position: GlassToastPosition.top,
                             ),
                           ),
@@ -331,7 +318,7 @@ class _FeedbackPageState extends State<FeedbackPage> {
                                   style: TextStyle(
                                     fontSize: 14,
                                     color: _uploadProgress == 1.0
-                                        ? Colors.green
+                                        ? CupertinoColors.activeGreen
                                         : CupertinoColors.tertiaryLabel
                                             .resolveFrom(context),
                                   ),
@@ -341,14 +328,14 @@ class _FeedbackPageState extends State<FeedbackPage> {
                           ),
                           if (_uploadProgress == 1.0)
                             Icon(CupertinoIcons.checkmark_circle_fill,
-                                color: Colors.green, size: 24),
+                                color: CupertinoColors.activeGreen, size: 24),
                         ],
                       ),
                       SizedBox(height: 16),
                       GlassProgressIndicator.linear(
                         value: _uploadProgress,
                         color: _uploadProgress == 1.0
-                            ? Colors.green
+                            ? CupertinoColors.activeGreen
                             : const Color(0xFF007AFF),
                       ),
                       SizedBox(height: 16),

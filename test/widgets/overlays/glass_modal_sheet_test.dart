@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import '../../shared/test_helpers.dart';
@@ -128,6 +129,71 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Modal Content'), findsOneWidget);
+    });
+
+    testWidgets('show() falls back when initialState is not an offered detent',
+        (tester) async {
+      // A caller can ask to open on a detent the sheet doesn't offer — most
+      // easily by leaving initialState at its default while narrowing the
+      // set. Opening on a state that isn't in orderedStates leaves the sheet
+      // wedged (no rest position resolves), so show() coerces it to one that
+      // IS offered rather than trusting the caller.
+      final controller = GlassModalSheetController();
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Builder(
+              builder: (context) => ElevatedButton(
+                onPressed: () => GlassModalSheet.show(
+                  context: context,
+                  controller: controller,
+                  // Asks for full; only medium is on offer.
+                  initialState: GlassSheetState.full,
+                  detents: const {GlassSheetDetent.medium},
+                  builder: (context) => const Text('Modal Content'),
+                ),
+                child: const Text('Show'),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      await tester.tap(find.text('Show'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Modal Content'), findsOneWidget);
+      expect(controller.currentState, GlassSheetState.half,
+          reason: 'full was not offered, so the sheet opens at the medium '
+              'detent instead of a state it cannot rest at');
+    });
+
+    testWidgets('show() coerces the other direction too', (tester) async {
+      // The mirror case: half requested, only large offered.
+      final controller = GlassModalSheetController();
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Builder(
+              builder: (context) => ElevatedButton(
+                onPressed: () => GlassModalSheet.show(
+                  context: context,
+                  controller: controller,
+                  initialState: GlassSheetState.half,
+                  detents: const {GlassSheetDetent.large},
+                  builder: (context) => const Text('Modal Content'),
+                ),
+                child: const Text('Show'),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      await tester.tap(find.text('Show'));
+      await tester.pumpAndSettle();
+
+      expect(controller.currentState, GlassSheetState.full);
     });
 
     testWidgets('respects custom border radius', (tester) async {
@@ -322,7 +388,11 @@ void main() {
               GlassModalSheet(
                 controller: controller,
                 initialState: GlassSheetState.half,
-                enablePeek: true,
+                detents: const {
+                  GlassSheetDetent.small,
+                  GlassSheetDetent.medium,
+                  GlassSheetDetent.large
+                },
                 child: const SizedBox.expand(),
               ),
             ],
@@ -497,7 +567,11 @@ void main() {
               GlassModalSheet(
                 controller: controller,
                 initialState: GlassSheetState.half,
-                enablePeek: true,
+                detents: const {
+                  GlassSheetDetent.small,
+                  GlassSheetDetent.medium,
+                  GlassSheetDetent.large
+                },
                 child: const SizedBox.expand(),
               ),
             ],
@@ -586,6 +660,73 @@ void main() {
       expect(find.text('Minimal Content'), findsOneWidget);
       // Verify drag indicator is NOT there
       expect(find.bySemanticsLabel('Drag handle'), findsNothing);
+    });
+
+    testWidgets('drag indicator Semantics.onTap dismisses the sheet',
+        (tester) async {
+      final semantics = tester.ensureSemantics();
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Builder(
+              builder: (context) => ElevatedButton(
+                onPressed: () {
+                  GlassModalSheet.show(
+                    context: context,
+                    builder: (context) => const Text('Sheet Content'),
+                  );
+                },
+                child: const Text('Open'),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      await tester.tap(find.text('Open'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Sheet Content'), findsOneWidget);
+
+      final handle = find.bySemanticsLabel('Drag handle');
+      expect(handle, findsOneWidget);
+
+      // ignore: deprecated_member_use
+      tester.binding.pipelineOwner.semanticsOwner!.performAction(
+        tester.getSemantics(handle).id,
+        SemanticsAction.tap,
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Sheet Content'), findsNothing);
+      semantics.dispose();
+    });
+
+    testWidgets('respects custom dragIndicatorColor', (tester) async {
+      const customColor = Color(0xFFFF0000);
+      await tester.pumpWidget(
+        createTestApp(
+          child: Stack(
+            children: [
+              GlassModalSheet(
+                dragIndicatorColor: customColor,
+                child: const SizedBox.expand(),
+              ),
+            ],
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final containerFinder = find.descendant(
+        of: find.bySemanticsLabel('Drag handle'),
+        matching: find.byType(Container),
+      );
+
+      expect(containerFinder, findsOneWidget);
+      final container = tester.widget<Container>(containerFinder);
+      final decoration = container.decoration as BoxDecoration;
+      expect(decoration.color, customColor);
     });
 
     testWidgets('handles extreme radii correctly', (tester) async {

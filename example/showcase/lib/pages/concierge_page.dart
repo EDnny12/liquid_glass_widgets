@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 
 import '../widgets/animated_background.dart';
@@ -69,8 +69,8 @@ class _ConciergePageState extends State<ConciergePage> {
   @override
   Widget build(BuildContext context) {
     return AppBackground(
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
+      child: GlassScaffold(
+        backgroundColor: Color(0x00000000),
         body: SafeArea(
           child: Column(
             children: [
@@ -79,7 +79,7 @@ class _ConciergePageState extends State<ConciergePage> {
                 child: _buildChatArea(),
               ),
               _buildPromptSuggestions(),
-              const SizedBox(height: 16),
+              SizedBox(height: 16),
               _buildInputArea(),
             ],
           ),
@@ -90,36 +90,36 @@ class _ConciergePageState extends State<ConciergePage> {
 
   Widget _buildHeader() {
     return Padding(
-      padding: const EdgeInsets.all(20.0),
+      padding: EdgeInsets.all(20.0),
       child: AdaptiveLiquidGlassLayer(
         quality: ShowcaseGlassTheme.premiumQuality,
         settings: ShowcaseGlassTheme.headerButtons,
         child: Row(
           children: [
             GlassButton(
-              icon: Icon(Icons.arrow_back_ios_new),
+              icon: Icon(CupertinoIcons.back),
               iconSize: 20,
               width: 44,
               height: 44,
               onTap: () => Navigator.of(context).pop(),
             ),
-            const SizedBox(width: 8),
+            SizedBox(width: 8),
             GlassButton(
-              icon: Icon(Icons.settings_outlined),
+              icon: Icon(CupertinoIcons.settings),
               iconSize: 20,
               width: 44,
               height: 44,
               onTap: () => _showSettingsSheet(),
             ),
-            const SizedBox(width: 16),
+            SizedBox(width: 16),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     'Concierge',
                     style: TextStyle(
-                      color: Colors.white,
+                      color: CupertinoColors.white,
                       fontSize: 24,
                       fontWeight: FontWeight.w700,
                     ),
@@ -127,7 +127,7 @@ class _ConciergePageState extends State<ConciergePage> {
                   Text(
                     'Available 24/7',
                     style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.6),
+                      color: CupertinoColors.white.withValues(alpha: 0.6),
                       fontSize: 13,
                     ),
                   ),
@@ -135,7 +135,7 @@ class _ConciergePageState extends State<ConciergePage> {
               ),
             ),
             GlassButton(
-              icon: Icon(Icons.more_horiz),
+              icon: Icon(CupertinoIcons.ellipsis),
               iconSize: 22,
               width: 44,
               height: 44,
@@ -149,38 +149,38 @@ class _ConciergePageState extends State<ConciergePage> {
 
   Widget _buildChatArea() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20.0),
+      padding: EdgeInsets.symmetric(horizontal: 20.0),
       child: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              padding: const EdgeInsets.all(24),
+              padding: EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: const Color(0xFF4A90E2).withValues(alpha: 0.15),
+                color: Color(0xFF4A90E2).withValues(alpha: 0.15),
                 shape: BoxShape.circle,
               ),
               child: Icon(
-                Icons.support_agent,
+                CupertinoIcons.person_fill,
                 size: 64,
-                color: const Color(0xFF4A90E2),
+                color: Color(0xFF4A90E2),
               ),
             ),
-            const SizedBox(height: 24),
-            const Text(
+            SizedBox(height: 24),
+            Text(
               'How can I help plan your trip?',
               style: TextStyle(
-                color: Colors.white,
+                color: CupertinoColors.white,
                 fontSize: 20,
                 fontWeight: FontWeight.w600,
               ),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8),
             Text(
               'Ask me about destinations, activities, dining,\nor anything else you need',
               style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.5),
+                color: CupertinoColors.white.withValues(alpha: 0.5),
                 fontSize: 14,
                 height: 1.5,
               ),
@@ -194,19 +194,19 @@ class _ConciergePageState extends State<ConciergePage> {
 
   Widget _buildPromptSuggestions() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20.0),
+      padding: EdgeInsets.symmetric(horizontal: 20.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Popular Questions',
             style: TextStyle(
-              color: Colors.white70,
+              color: CupertinoColors.white.withValues(alpha: 0.70),
               fontSize: 14,
               fontWeight: FontWeight.w600,
             ),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           Wrap(
             spacing: 8,
             runSpacing: 8,
@@ -223,22 +223,22 @@ class _ConciergePageState extends State<ConciergePage> {
     return GestureDetector(
       onTap: () => _onPromptTap(prompt),
       child: GlassCard(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        padding: EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         shape: const LiquidRoundedSuperellipse(borderRadius: 16),
         settings: ShowcaseGlassTheme.promptChips,
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(
-              Icons.lightbulb_outline,
+            Icon(
+              CupertinoIcons.lightbulb,
               size: 14,
               color: Color(0xFF4A90E2),
             ),
-            const SizedBox(width: 6),
+            SizedBox(width: 6),
             Text(
               prompt,
-              style: const TextStyle(
-                color: Colors.white,
+              style: TextStyle(
+                color: CupertinoColors.white,
                 fontSize: 13,
               ),
             ),
@@ -250,9 +250,9 @@ class _ConciergePageState extends State<ConciergePage> {
 
   Widget _buildInputArea() {
     return Padding(
-      padding: const EdgeInsets.all(20.0),
+      padding: EdgeInsets.all(20.0),
       child: GlassCard(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         shape: const LiquidRoundedSuperellipse(borderRadius: 24),
         settings: ShowcaseGlassTheme.chatInput,
         child: Row(
@@ -261,52 +261,52 @@ class _ConciergePageState extends State<ConciergePage> {
             GestureDetector(
               onTap: _onVoiceInput,
               child: Container(
-                padding: const EdgeInsets.all(8),
+                padding: EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.1),
+                  color: CupertinoColors.white.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
-                  Icons.mic_outlined,
-                  color: Colors.white.withValues(alpha: 0.8),
+                  CupertinoIcons.mic,
+                  color: CupertinoColors.white.withValues(alpha: 0.8),
                   size: 20,
                 ),
               ),
             ),
-            const SizedBox(width: 12),
+            SizedBox(width: 12),
 
             // Text input field
             Expanded(
-              child: TextField(
+              child: CupertinoTextField(
                 controller: _chatController,
                 focusNode: _chatFocusNode,
-                style: const TextStyle(
-                  color: Colors.white,
+                style: TextStyle(
+                  color: CupertinoColors.white,
                   fontSize: 15,
                 ),
                 maxLines: null,
                 textInputAction: TextInputAction.send,
                 onSubmitted: (_) => _onSendMessage(),
-                decoration: InputDecoration(
-                  hintText: 'Ask me anything...',
-                  hintStyle: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.4),
-                    fontSize: 15,
-                  ),
-                  border: InputBorder.none,
-                  contentPadding: EdgeInsets.zero,
+                placeholder: 'Ask me anything...',
+                placeholderStyle: TextStyle(
+                  color: CupertinoColors.white.withValues(alpha: 0.4),
+                  fontSize: 15,
                 ),
+                decoration: BoxDecoration(
+                  color: Color(0x00000000),
+                ),
+                padding: EdgeInsets.zero,
               ),
             ),
 
-            const SizedBox(width: 12),
+            SizedBox(width: 12),
 
             // Send button
             GestureDetector(
               onTap: _onSendMessage,
               child: Container(
-                padding: const EdgeInsets.all(8),
-                decoration: const BoxDecoration(
+                padding: EdgeInsets.all(8),
+                decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
                       Color(0xFF4A90E2),
@@ -315,9 +315,9 @@ class _ConciergePageState extends State<ConciergePage> {
                   ),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
-                  Icons.arrow_upward,
-                  color: Colors.white,
+                child: Icon(
+                  CupertinoIcons.arrow_up,
+                  color: CupertinoColors.white,
                   size: 20,
                 ),
               ),
@@ -329,28 +329,26 @@ class _ConciergePageState extends State<ConciergePage> {
   }
 
   void _showSettingsSheet() {
-    showModalBottomSheet(
+    GlassModalSheet.show(
       context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
       builder: (context) => StatefulBuilder(
         builder: (context, setSheetState) => GlassSheet(
           settings: ShowcaseGlassTheme.dialog,
           child: Padding(
-            padding: const EdgeInsets.all(24.0),
+            padding: EdgeInsets.all(24.0),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'Concierge Settings',
                   style: TextStyle(
-                    color: Colors.white,
+                    color: CupertinoColors.white,
                     fontSize: 20,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
-                const SizedBox(height: 24),
+                SizedBox(height: 24),
                 AdaptiveLiquidGlassLayer(
                   settings: ShowcaseGlassTheme.sheetSwitches,
                   child: Column(
@@ -361,19 +359,20 @@ class _ConciergePageState extends State<ConciergePage> {
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text(
+                              Text(
                                 'Voice Input',
                                 style: TextStyle(
-                                  color: Colors.white,
+                                  color: CupertinoColors.white,
                                   fontSize: 16,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
-                              const SizedBox(height: 4),
+                              SizedBox(height: 4),
                               Text(
                                 'Enable voice-to-text',
                                 style: TextStyle(
-                                  color: Colors.white.withValues(alpha: 0.6),
+                                  color: CupertinoColors.white
+                                      .withValues(alpha: 0.6),
                                   fontSize: 13,
                                 ),
                               ),
@@ -392,26 +391,27 @@ class _ConciergePageState extends State<ConciergePage> {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 20),
+                      SizedBox(height: 20),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text(
+                              Text(
                                 'Notifications',
                                 style: TextStyle(
-                                  color: Colors.white,
+                                  color: CupertinoColors.white,
                                   fontSize: 16,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
-                              const SizedBox(height: 4),
+                              SizedBox(height: 4),
                               Text(
                                 'Get travel updates',
                                 style: TextStyle(
-                                  color: Colors.white.withValues(alpha: 0.6),
+                                  color: CupertinoColors.white
+                                      .withValues(alpha: 0.6),
                                   fontSize: 13,
                                 ),
                               ),
@@ -433,9 +433,9 @@ class _ConciergePageState extends State<ConciergePage> {
                     ],
                   ),
                 ),
-                const SizedBox(height: 24),
+                SizedBox(height: 24),
                 GlassButton(
-                  icon: Icon(Icons.check),
+                  icon: Icon(CupertinoIcons.checkmark),
                   label: 'Done',
                   height: 50,
                   width: 50,

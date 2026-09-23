@@ -107,12 +107,16 @@ class GlassChip extends StatelessWidget {
     this.settings,
     this.useOwnLayer = false,
     this.quality,
+    this.platformViewBackdrop = false,
     // GlassButton properties
     this.interactionScale = 1.03,
     this.stretch = 0.3,
     this.glowRadius = 0.8,
     this.anchorStretch = true,
     this.anchorStretchSettings = const AnchorStretchSettings(),
+    this.focusNode,
+    this.autofocus = false,
+    this.semanticLabel,
   }) : deleteIcon = deleteIcon ?? const Icon(CupertinoIcons.xmark_circle_fill);
 
   // ===========================================================================
@@ -121,6 +125,15 @@ class GlassChip extends StatelessWidget {
 
   /// The label text displayed in the chip.
   final String label;
+
+  /// Externally provided focus node.
+  final FocusNode? focusNode;
+
+  /// Whether to request focus immediately.
+  final bool autofocus;
+
+  /// Semantic label for screen readers. Defaults to [label].
+  final String? semanticLabel;
 
   /// Optional leading icon widget.
   final Widget? icon;
@@ -210,6 +223,16 @@ class GlassChip extends StatelessWidget {
   /// Use [GlassQuality.premium] for shader-based glass in static layouts only.
   final GlassQuality? quality;
 
+  /// Render the backdrop through a live [BackdropFilter] instead of the
+  /// shader's captured backdrop.
+  ///
+  /// Set this when the chip floats over a platform view (a map, a camera
+  /// preview, a video). The premium and standard shaders read their backdrop
+  /// from a capture, which cannot see a platform view, so over one they
+  /// render inert. [GlassButton] already exposes this; without it here a chip
+  /// has no correct rendering path above a platform view.
+  final bool platformViewBackdrop;
+
   // ===========================================================================
   // Interaction Properties (from GlassButton)
   // ===========================================================================
@@ -240,7 +263,7 @@ class GlassChip extends StatelessWidget {
   /// See [AnchorStretchSettings] for details.
   final AnchorStretchSettings anchorStretchSettings;
 
-  static const _chipShape = LiquidRoundedSuperellipse(borderRadius: 100);
+  static const _chipShape = LiquidRoundedRectangle(borderRadius: 100);
 
   @override
   Widget build(BuildContext context) {
@@ -340,6 +363,7 @@ class GlassChip extends StatelessWidget {
           settings: settings,
           useOwnLayer: useOwnLayer,
           quality: quality ?? GlassQuality.standard,
+          platformViewBackdrop: platformViewBackdrop,
           interactionScale: effectiveInteractionScale,
           stretch: effectiveStretch,
           glowRadius: glowRadius,
@@ -349,6 +373,9 @@ class GlassChip extends StatelessWidget {
           enabled: isInteractive,
           anchorStretch: effectiveAnchorStretch,
           anchorStretchSettings: effectiveAnchorStretchSettings,
+          focusNode: focusNode,
+          autofocus: autofocus,
+          label: semanticLabel ?? label,
           width: double.infinity, // Expand to intrinsic width
           height: double.infinity, // Expand to intrinsic height
           child: contentWithSelection,

@@ -45,6 +45,23 @@ void main() {
       expect(find.text('std'), findsOneWidget);
     });
 
+    testWidgets('respects clipExpansion parameter', (tester) async {
+      await tester.pumpWidget(
+        createTestApp(
+          child: AdaptiveGlass(
+            shape: _shape,
+            settings: _settings,
+            quality: GlassQuality.premium,
+            useOwnLayer: true,
+            clipExpansion: const EdgeInsets.all(12.0),
+            child: const Text('clipExp'),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('clipExp'), findsOneWidget);
+    });
+
     testWidgets('grouped helper creates AdaptiveGlass without own layer',
         (tester) async {
       await tester.pumpWidget(
@@ -321,6 +338,138 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(find.text('premGroup'), findsOneWidget);
+    });
+  });
+
+  group('AdaptiveGlass bodyMode (GlassBodyMode.clear)', () {
+    testWidgets(
+        'renders cleanly with bodyMode: GlassBodyMode.clear in all quality tiers',
+        (tester) async {
+      const clearSettings = LiquidGlassSettings(
+        bodyMode: GlassBodyMode.clear,
+        glassColor: Color(0xD9C3E0F5),
+        blur: 0,
+      );
+
+      for (final quality in [
+        GlassQuality.minimal,
+        GlassQuality.standard,
+        GlassQuality.premium,
+      ]) {
+        await tester.pumpWidget(
+          createTestApp(
+            child: AdaptiveGlass(
+              shape: _shape,
+              settings: clearSettings,
+              quality: quality,
+              useOwnLayer: true,
+              child: Text('clear_${quality.name}'),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+        expect(find.text('clear_${quality.name}'), findsOneWidget);
+      }
+    });
+
+    testWidgets('preserves exact zero alpha in clear mode minimal tier',
+        (tester) async {
+      const clearSettings = LiquidGlassSettings(
+        bodyMode: GlassBodyMode.clear,
+        glassColor: Color(0x00FFFFFF),
+        blur: 0,
+      );
+
+      await tester.pumpWidget(
+        createTestApp(
+          child: AdaptiveGlass(
+            shape: _shape,
+            settings: clearSettings,
+            quality: GlassQuality.minimal,
+            child: const Text('zeroAlphaClear'),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('zeroAlphaClear'), findsOneWidget);
+
+      // Verify DecoratedBox has withValues(alpha: 0.0)
+      final decoratedBoxes =
+          tester.widgetList<DecoratedBox>(find.byType(DecoratedBox));
+      expect(
+        decoratedBoxes.any((box) {
+          final dec = box.decoration;
+          return (dec is ShapeDecoration && dec.color?.a == 0.0) ||
+              (dec is BoxDecoration && dec.color?.a == 0.0);
+        }),
+        isTrue,
+      );
+    });
+  });
+
+  group('AdaptiveGlass infinite borderRadius handling', () {
+    testWidgets(
+        'LiquidRoundedRectangle(borderRadius: double.infinity) routes ClipRRect with finite radius',
+        (tester) async {
+      await tester.pumpWidget(
+        createTestApp(
+          child: const AdaptiveGlass(
+            shape: LiquidRoundedRectangle(borderRadius: double.infinity),
+            settings: _settings,
+            quality: GlassQuality.standard,
+            child: SizedBox(width: 60, height: 60),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final clipRRect = tester.widget<ClipRRect>(find.byType(ClipRRect));
+      final radius = clipRRect.borderRadius as BorderRadius;
+      expect(radius.topLeft.x.isFinite, isTrue);
+      expect(radius.topLeft.x, greaterThan(0.0));
+    });
+
+    testWidgets(
+        'LiquidRoundedRectangle(borderRadius: double.infinity) with drop shadow creates finite BorderRadius for decoration',
+        (tester) async {
+      await tester.pumpWidget(
+        createTestApp(
+          theme: ThemeData(brightness: Brightness.light),
+          child: const AdaptiveGlass(
+            shape: LiquidRoundedRectangle(borderRadius: double.infinity),
+            settings: LiquidGlassSettings(
+              shadowElevation: 8,
+            ),
+            child: SizedBox(width: 60, height: 60),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final decBox =
+          tester.widget<DecoratedBox>(find.byType(DecoratedBox).first);
+      final boxDec = decBox.decoration as BoxDecoration;
+      final radius = boxDec.borderRadius as BorderRadius;
+      expect(radius.topLeft.x.isFinite, isTrue);
+      expect(radius.topLeft.x, greaterThan(0.0));
+    });
+
+    testWidgets(
+        'platformViewBackdrop with infinite borderRadius routes ClipRRect with finite radius',
+        (tester) async {
+      await tester.pumpWidget(
+        createTestApp(
+          child: const AdaptiveGlass(
+            shape: LiquidRoundedRectangle(borderRadius: double.infinity),
+            settings: _settings,
+            platformViewBackdrop: true,
+            child: SizedBox(width: 60, height: 60),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final clipRRect = tester.widget<ClipRRect>(find.byType(ClipRRect).first);
+      final radius = clipRRect.borderRadius as BorderRadius;
+      expect(radius.topLeft.x.isFinite, isTrue);
+      expect(radius.topLeft.x, greaterThan(0.0));
     });
   });
 }

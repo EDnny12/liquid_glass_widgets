@@ -1,5 +1,5 @@
 import 'dart:math' as math;
-import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 
 /// Glass theme settings for the Wanderlust Showcase App
@@ -33,7 +33,7 @@ class ShowcaseGlassTheme {
         thickness: 25,
         ambientStrength: 0.4,
         lightAngle: standardLightAngle,
-        glassColor: Colors.white.withValues(alpha: 0.1),
+        glassColor: CupertinoColors.white.withValues(alpha: 0.1),
       );
 
   /// Settings for the profile button in home page (lighter variant)
@@ -43,7 +43,7 @@ class ShowcaseGlassTheme {
         ambientStrength: 0.5,
         lightIntensity: 0.7,
         lightAngle: standardLightAngle,
-        glassColor: Colors.white12,
+        glassColor: CupertinoColors.white.withValues(alpha: 0.12),
       );
 
   /// Settings for top navigation buttons on detail page (darker variant)
@@ -52,7 +52,7 @@ class ShowcaseGlassTheme {
         thickness: 25,
         ambientStrength: 0.4,
         lightAngle: standardLightAngle,
-        glassColor: Colors.black.withValues(alpha: 0.3),
+        glassColor: CupertinoColors.black.withValues(alpha: 0.3),
       );
 
   // ===========================================================================
@@ -64,7 +64,7 @@ class ShowcaseGlassTheme {
         blur: 4,
         ambientStrength: 2,
         lightAngle: standardLightAngle,
-        glassColor: Colors.black12,
+        glassColor: CupertinoColors.black.withValues(alpha: 0.12),
         thickness: 30,
       );
 
@@ -73,7 +73,7 @@ class ShowcaseGlassTheme {
         thickness: 5,
         ambientStrength: 0.4,
         lightAngle: modalLightAngle,
-        glassColor: Colors.white.withValues(alpha: 0.08),
+        glassColor: CupertinoColors.white.withValues(alpha: 0.08),
       );
 
   // ===========================================================================
@@ -86,7 +86,7 @@ class ShowcaseGlassTheme {
         ambientStrength: 0.5,
         lightIntensity: 0.5,
         lightAngle: standardLightAngle,
-        glassColor: Colors.black.withValues(alpha: 0.4),
+        glassColor: CupertinoColors.black.withValues(alpha: 0.4),
       );
 
   /// Settings for segmented control
@@ -95,7 +95,7 @@ class ShowcaseGlassTheme {
         thickness: 25,
         ambientStrength: 0.4,
         lightAngle: modalLightAngle,
-        glassColor: Colors.white.withValues(alpha: 0.08),
+        glassColor: CupertinoColors.white.withValues(alpha: 0.08),
       );
 
   /// Settings for prompt suggestion chips
@@ -103,7 +103,7 @@ class ShowcaseGlassTheme {
         thickness: 5,
         ambientStrength: 0.3,
         lightAngle: modalLightAngle,
-        glassColor: Colors.white.withValues(alpha: 0.12),
+        glassColor: CupertinoColors.white.withValues(alpha: 0.12),
       );
 
   // ===========================================================================
@@ -116,7 +116,7 @@ class ShowcaseGlassTheme {
         ambientStrength: 0.5,
         lightIntensity: 0.8,
         lightAngle: standardLightAngle,
-        glassColor: Colors.blue.withValues(alpha: 0.1),
+        glassColor: CupertinoColors.activeBlue.withValues(alpha: 0.1),
       );
 
   /// Settings for filter/modal action buttons (Clear, Apply)
@@ -125,7 +125,7 @@ class ShowcaseGlassTheme {
         ambientStrength: 0.5,
         lightIntensity: 0.8,
         lightAngle: standardLightAngle,
-        glassColor: Colors.blue.withValues(alpha: 0.1),
+        glassColor: CupertinoColors.activeBlue.withValues(alpha: 0.1),
       );
 
   /// Settings for the "Done" button in concierge settings
@@ -134,7 +134,7 @@ class ShowcaseGlassTheme {
         ambientStrength: 0.5,
         lightIntensity: 0.8,
         lightAngle: standardLightAngle,
-        glassColor: Colors.blue.withValues(alpha: 0.1),
+        glassColor: CupertinoColors.activeBlue.withValues(alpha: 0.1),
       );
 
   // ===========================================================================
@@ -148,7 +148,7 @@ class ShowcaseGlassTheme {
         ambientStrength: 0.5,
         lightIntensity: 0.6,
         lightAngle: modalLightAngle,
-        glassColor: Colors.white.withValues(alpha: 0.12),
+        glassColor: CupertinoColors.white.withValues(alpha: 0.12),
       );
 
   /// Settings for switches inside bottom sheets
@@ -157,7 +157,7 @@ class ShowcaseGlassTheme {
         thickness: 25,
         ambientStrength: 0.4,
         lightAngle: standardLightAngle,
-        glassColor: Colors.white.withValues(alpha: 0.08),
+        glassColor: CupertinoColors.white.withValues(alpha: 0.08),
       );
 
   /// Settings for dialogs
@@ -167,7 +167,7 @@ class ShowcaseGlassTheme {
         ambientStrength: 0.5,
         lightIntensity: 0.6,
         lightAngle: modalLightAngle,
-        glassColor: Colors.white.withValues(alpha: 0.08),
+        glassColor: CupertinoColors.white.withValues(alpha: 0.08),
       );
 
   // ===========================================================================

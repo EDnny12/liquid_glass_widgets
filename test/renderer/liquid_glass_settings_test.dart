@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:liquid_glass_widgets/constants/glass_defaults.dart';
-import 'package:liquid_glass_widgets/src/renderer/liquid_glass_settings.dart';
+import 'package:liquid_glass_widgets/src/engine/liquid_glass_settings.dart';
 
 void main() {
   group('LiquidGlassSettings', () {
@@ -384,10 +384,12 @@ void main() {
         expect(a, isNot(equals(b)));
       });
 
-      test('props contains both whiten fields', () {
-        const s = LiquidGlassSettings(whitenStrength: 0.4, whitenGated: false);
-        expect(s.props, contains(0.4));
-        expect(s.props, contains(false));
+      test('hashCode includes both whiten fields', () {
+        const s1 = LiquidGlassSettings(whitenStrength: 0.4, whitenGated: false);
+        const s2 = LiquidGlassSettings(whitenStrength: 0.4, whitenGated: false);
+        const s3 = LiquidGlassSettings(whitenStrength: 0.4, whitenGated: true);
+        expect(s1.hashCode, equals(s2.hashCode));
+        expect(s1.hashCode, isNot(equals(s3.hashCode)));
       });
     });
 
@@ -436,9 +438,60 @@ void main() {
         expect(a, isNot(equals(c)));
       });
 
-      test('props contains backerColor', () {
-        const s = LiquidGlassSettings(backerColor: Color(0x59000000));
-        expect(s.props, contains(const Color(0x59000000)));
+      test('hashCode includes backerColor', () {
+        const a = LiquidGlassSettings(backerColor: Color(0x59000000));
+        const b = LiquidGlassSettings(backerColor: Color(0x59000000));
+        const c = LiquidGlassSettings();
+        expect(a.hashCode, equals(b.hashCode));
+        expect(a.hashCode, isNot(equals(c.hashCode)));
+      });
+    });
+
+    group('bodyMode', () {
+      test('defaults to GlassBodyMode.adaptive', () {
+        const s = LiquidGlassSettings();
+        expect(s.bodyMode, equals(GlassBodyMode.adaptive));
+      });
+
+      test('copyWith sets bodyMode without touching other fields', () {
+        const base = LiquidGlassSettings();
+        final copy = base.copyWith(bodyMode: GlassBodyMode.clear);
+        expect(copy.bodyMode, equals(GlassBodyMode.clear));
+        expect(copy.blur, equals(base.blur));
+        expect(copy.thickness, equals(base.thickness));
+      });
+
+      test('copyWithPinch preserves bodyMode', () {
+        const base = LiquidGlassSettings(bodyMode: GlassBodyMode.clear);
+        final pinched = base.copyWithPinch(0.5);
+        expect(pinched.bodyMode, equals(GlassBodyMode.clear));
+      });
+
+      test('lerp switches bodyMode at t=0.5', () {
+        const a = LiquidGlassSettings(bodyMode: GlassBodyMode.adaptive);
+        const b = LiquidGlassSettings(bodyMode: GlassBodyMode.clear);
+        expect(LiquidGlassSettings.lerp(a, b, 0.49).bodyMode,
+            equals(GlassBodyMode.adaptive));
+        expect(LiquidGlassSettings.lerp(a, b, 0.50).bodyMode,
+            equals(GlassBodyMode.clear));
+        expect(LiquidGlassSettings.lerp(a, b, 0.99).bodyMode,
+            equals(GlassBodyMode.clear));
+      });
+
+      test('equality includes bodyMode', () {
+        const a = LiquidGlassSettings(bodyMode: GlassBodyMode.adaptive);
+        const b = LiquidGlassSettings(bodyMode: GlassBodyMode.adaptive);
+        const c = LiquidGlassSettings(bodyMode: GlassBodyMode.clear);
+        expect(a, equals(b));
+        expect(a, isNot(equals(c)));
+      });
+
+      test('hashCode includes bodyMode', () {
+        const a = LiquidGlassSettings(bodyMode: GlassBodyMode.adaptive);
+        const b = LiquidGlassSettings(bodyMode: GlassBodyMode.adaptive);
+        const c = LiquidGlassSettings(bodyMode: GlassBodyMode.clear);
+        expect(a.hashCode, equals(b.hashCode));
+        expect(a.hashCode, isNot(equals(c.hashCode)));
       });
     });
   });

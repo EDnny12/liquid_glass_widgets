@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
+import '../shared/glass_focus_region.dart';
+import '../shared/glass_interaction_state_mixin.dart';
 
 /// A menu item for use within a [GlassMenu].
 ///
@@ -25,6 +26,7 @@ class GlassMenuItem extends StatefulWidget {
     this.iconColor,
     this.iconSize = 20.0,
     this.maxLines = 1,
+    this.enablePressScale = true,
   });
 
   /// The primary text of the item.
@@ -78,6 +80,16 @@ class GlassMenuItem extends StatefulWidget {
   /// Defaults to 1. Set to 2 for longer labels like "Set Up Name & Photo".
   final int maxLines;
 
+  /// Whether to apply the subtle scale-down animation on press.
+  ///
+  /// When `true` (default), the item shrinks to 0.98× on touch-down, matching
+  /// the standard iOS press feedback. Set to `false` on fill-rate-limited
+  /// devices to eliminate the per-frame GPU cost of animating a
+  /// [Transform.scale] over the glass layer.
+  ///
+  /// Defaults to `true`.
+  final bool enablePressScale;
+
   @override
   State<GlassMenuItem> createState() => _GlassMenuItemState();
 }
@@ -107,7 +119,7 @@ class GlassMenuDivider extends StatelessWidget {
     // Resolve from theme's label color, falling back to text color at 15%
     final defaultLineColor =
         (theme.textTheme.tabLabelTextStyle.color ?? CupertinoColors.label)
-            .withValues(alpha: 0.15);
+            .withValues(alpha: 0.45);
     return SizedBox(
       height: height,
       child: Center(
@@ -180,13 +192,18 @@ class GlassMenuLabel extends StatelessWidget {
   }
 }
 
-class _GlassMenuItemState extends State<GlassMenuItem> {
-  bool _isHovered = false;
-  bool _isPressed = false;
-  @override
-  void dispose() {
-    _isHovered = false;
-    super.dispose();
+class _GlassMenuItemState extends State<GlassMenuItem>
+    with GlassInteractionStateMixin {
+  // Interaction state (isPressed, isFocused, isHovered, allInteraction)
+  // is provided by GlassInteractionStateMixin.
+
+  void _handleKeyboardActivate() {
+    if (!mounted || !widget.enabled) return;
+    isPressed.value = true;
+    widget.onTap();
+    Future.delayed(const Duration(milliseconds: 100), () {
+      if (mounted) isPressed.value = false;
+    });
   }
 
   @override
@@ -217,35 +234,32 @@ class _GlassMenuItemState extends State<GlassMenuItem> {
         (widget.isDestructive
             ? CupertinoColors.destructiveRed
             : baseColor.withValues(alpha: 0.9));
+
     // Dynamic background for hover/press states
     // We use a subtle white overlay to "brighten" the glass
-    final bool effectivePressed = (widget.isPressed == true) || _isPressed;
-    final bool effectiveSelected = widget.isSelected;
+    final content = ListenableBuilder(
+      listenable: allInteraction,
+      builder: (context, _) {
+        final bool isHov = isHovered.value;
+        final bool isFoc = isFocused.value;
+        final bool localPressed = isPressed.value;
+        final bool effectivePressed =
+            (widget.isPressed == true) || localPressed;
+        final bool effectiveSelected = widget.isSelected;
 
-    final Color backgroundColor = effectiveSelected
-        ? Colors.transparent // Parent renders the sliding pill
-        : effectivePressed
-            ? const Color(0x26FFFFFF) // Standalone press
-            : _isHovered
-                ? const Color(0x1AFFFFFF)
-                : Colors.transparent;
+        final Color backgroundColor = effectiveSelected
+            ? const Color(0x00000000) // Parent renders the sliding pill
+            : effectivePressed
+                ? const Color(0x26FFFFFF) // Standalone press
+                : (isHov || isFoc)
+                    ? const Color(0x1AFFFFFF)
+                    : const Color(0x00000000);
 
-    // Scale effect on press (subtle squash like iOS buttons)
-    final double scale = effectivePressed ? 0.98 : 1.0;
+        // Scale effect on press (subtle squash like iOS buttons)
+        final double scale =
+            (widget.enablePressScale && effectivePressed) ? 0.98 : 1.0;
 
-    // Build the item content
-    return GestureDetector(
-      onTapDown:
-          widget.enabled ? (_) => setState(() => _isPressed = true) : null,
-      onTapUp:
-          widget.enabled ? (_) => setState(() => _isPressed = false) : null,
-      onTapCancel:
-          widget.enabled ? () => setState(() => _isPressed = false) : null,
-      onTap: widget.enabled ? widget.onTap : null,
-      child: MouseRegion(
-        onEnter: (_) => setState(() => _isHovered = true),
-        onExit: (_) => setState(() => _isHovered = false),
-        child: ConstrainedBox(
+        return ConstrainedBox(
           constraints: BoxConstraints(minHeight: widget.height),
           child: AnimatedScale(
             scale: scale,
@@ -319,7 +333,27 @@ class _GlassMenuItemState extends State<GlassMenuItem> {
               ),
             ),
           ),
-        ),
+        );
+      },
+    );
+
+    // Build the item content
+    return GlassFocusRegion(
+      enabled: widget.enabled,
+      isButton: true,
+      semanticLabel: widget.title,
+      isFocusedNotifier: isFocused,
+      isHoveredNotifier: isHovered,
+      onKeyboardActivate: _handleKeyboardActivate,
+      semanticOnTap: widget.enabled ? widget.onTap : null,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+      child: GestureDetector(
+        onTapDown: widget.enabled ? (_) => isPressed.value = true : null,
+        onTapUp: widget.enabled ? (_) => isPressed.value = false : null,
+        onTapCancel: widget.enabled ? () => isPressed.value = false : null,
+        onTap: widget.enabled ? widget.onTap : null,
+        behavior: HitTestBehavior.opaque,
+        child: content,
       ),
     );
   }
