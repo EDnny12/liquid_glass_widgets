@@ -148,11 +148,15 @@ class _TabIndicatorMotionState extends State<TabIndicatorMotion>
       _deformation.setValue(0);
     }
 
+    // Begin retiring the active lens as the pill arrives, while its final
+    // position and shape recovery are still moving. Waiting for exact rest
+    // leaves a visible hold at the destination before the material changes.
+    final visuallyArriving =
+        (_position.value - widget.target).abs() * _pixelsPerAlignment < 2.0 &&
+            _position.velocity.abs() * _pixelsPerAlignment < 30.0 &&
+            _deformation.value.abs() < 0.1;
     final materialTarget = widget.visible &&
-            (widget.pressed ||
-                widget.dragging ||
-                !positionSettled ||
-                !shapeSettled)
+            (widget.pressed || widget.dragging || !visuallyArriving)
         ? 1.0
         : 0.0;
     if (_materialTarget != materialTarget) {

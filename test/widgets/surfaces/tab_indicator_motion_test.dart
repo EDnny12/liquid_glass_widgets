@@ -6,7 +6,7 @@ import 'package:liquid_glass_widgets/src/widgets/surfaces/tab_indicator_motion.d
 
 class _Sample {
   _Sample(this.position, this.velocity, this.thickness, Matrix4 transform)
-      : deformation = (1 - transform.entry(0, 0)) / 0.4;
+      : deformation = (transform.entry(0, 0) - 1) / 0.4;
 
   final double position;
   final double velocity;
@@ -69,11 +69,11 @@ void main() {
       final cap = quality == GlassQuality.premium ? 0.8 : 0.35;
       expect(IndicatorDeformationScope.maxDistortionFor(quality), cap);
       final matrix = IndicatorDeformationScope.transformFor(10, quality);
-      expect(matrix.entry(0, 0), 1 - cap * 0.5);
-      expect(matrix.entry(1, 1), 1 + cap * 0.3);
+      expect(matrix.entry(0, 0), 1 + cap * 0.5);
+      expect(matrix.entry(1, 1), 1 - cap * 0.3);
       final recovery = IndicatorDeformationScope.transformFor(-10, quality);
-      expect(recovery.entry(0, 0), 1 + cap * 0.5);
-      expect(recovery.entry(1, 1), 1 - cap * 0.3);
+      expect(recovery.entry(0, 0), 1 - cap * 0.5);
+      expect(recovery.entry(1, 1), 1 + cap * 0.3);
       for (final value in [0.0, double.nan, double.infinity]) {
         final neutral = IndicatorDeformationScope.transformFor(value, quality);
         expect(neutral.entry(0, 0), 1);
@@ -105,15 +105,18 @@ void main() {
           isTrue,
           reason: 'shape must recover through neutral, not only track speed',
         );
+        final peakMaterial = samples.indexWhere((s) => s.thickness > 0.95);
+        expect(peakMaterial, greaterThanOrEqualTo(0));
         expect(
-          samples.any(
-            (s) =>
-                (s.position - target).abs() < 0.001 &&
-                s.deformation.abs() > 0.001 &&
-                s.thickness > 0.95,
-          ),
+          samples.skip(peakMaterial + 1).any(
+                (s) =>
+                    s.thickness < 0.9 &&
+                    s.thickness > 0.05 &&
+                    (s.position - target).abs() > 0.0001,
+              ),
           isTrue,
-          reason: 'lens remains active during residual shape recovery',
+          reason:
+              'the lens must retire during arrival, without a hold at the destination',
         );
         expect(harness.sample.position, target);
         expect(harness.sample.deformation, 0);

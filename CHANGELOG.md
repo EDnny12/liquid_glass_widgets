@@ -2,6 +2,8 @@
 
 - Bottom and searchable tab indicators now retain the active lens through a
   bounded spring-driven shape recovery, preserving motion during rapid redirects.
+- The indicator stretches along tab travel and retires its active material as
+  it arrives, removing the visible pause before settling.
 - Lens, resting pill and icon masks share the effective deformation and padded
   rounded-rectangle geometry. Standard/minimal keep the 0.35 distortion cap; premium
   keeps 0.8. Segmented and inline controls retain their existing motion.

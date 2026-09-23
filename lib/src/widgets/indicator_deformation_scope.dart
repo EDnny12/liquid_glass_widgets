@@ -25,7 +25,7 @@ class IndicatorDeformationScope extends InheritedWidget {
   static double maxDistortionFor(GlassQuality quality) =>
       quality == GlassQuality.premium ? 0.8 : 0.35;
 
-  /// Builds a bounded horizontal squash with a small signed recovery.
+  /// Builds a bounded stretch along the direction of tab travel.
   static Matrix4 transformFor(double deformation, GlassQuality quality) {
     final amount = (deformation.isFinite ? deformation : 0.0).clamp(-1.0, 1.0) *
         maxDistortionFor(quality);
@@ -33,7 +33,7 @@ class IndicatorDeformationScope extends InheritedWidget {
       // Keep the transform layer mounted, as in buildJellyTransform.
       return Matrix4.translationValues(0.0001, 0, 0);
     }
-    return Matrix4.diagonal3Values(1 - amount * 0.5, 1 + amount * 0.3, 1);
+    return Matrix4.diagonal3Values(1 + amount * 0.5, 1 - amount * 0.3, 1);
   }
 
   @override

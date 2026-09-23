@@ -37,14 +37,18 @@
 and adds one scalar shape state with its velocity using `SingleSpringController`.
 Position retains the previous presets and custom spring support. Shape follows
 a bounded demand derived from velocity, using a local 280 ms spring with bounce
-0.4. When demand disappears, shape recovers without timers. These values are
+0.4. It stretches horizontally during travel and contracts as it arrives.
+When demand disappears, shape recovers without timers. These values are
 package-specific tuning, not constants published by Apple.
 
 Redirects preserve position, velocity, deformation, and deformation velocity.
 Rest requires both small distance and low velocity: below 0.1 px and 1 px/s,
 converted into the control's coordinate space. Both deformation value and
 velocity are also checked, so crossing zero is not mistaken for rest. Values
-then snap exactly to rest and the material retires.
+then snap exactly to rest. The active material starts retiring as the position
+arrives (within 2 px at under 30 px/s, with under 0.1 shape deformation),
+overlapping the final movement. Waiting for exact rest left a visible pause at
+the destination. Presses, drags, and fast crossings keep the material active.
 
 `IndicatorDeformationScope`, internal and unexported, supplies a single effective
 matrix to the lens and background; the same instance reaches both `JellyClipper`
@@ -106,8 +110,8 @@ The new tests inspect intermediate frames, not just `pumpAndSettle`:
 - Version 1.7.2 custom indicator radii and independent background quality.
 
 In the deterministic test of a 400 × 64 px bar with four tabs, the complete
-animation until all tickers stop takes approximately 1.07 s for an adjacent tab
-and 1.22 s from the first to the last tab. Samples were taken every 8 and 16 ms.
+animation until all tickers stop takes approximately 0.81 s for an adjacent tab
+and 0.85 s from the first to the last tab. Samples were taken every 8 and 16 ms.
 These durations include the numerical tail and material retirement; they are
 not CPU/GPU timings or measurements of device frame performance. Peak recovery
 beyond the neutral shape is approximately 0.7% and 1.9% of horizontal scale in
