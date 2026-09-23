@@ -1,4 +1,6 @@
 // ignore_for_file: deprecated_member_use
+import 'dart:math' as math;
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart' show ValueListenable;
 import '../../src/renderer/liquid_glass_renderer.dart';
@@ -896,24 +898,17 @@ class JellyClipper extends CustomClipper<Path> {
 
   @override
   Path getClip(Size size) {
-    // Calculate the base rect of the indicator (same logic as FractionallySizedBox)
-    final tabWidth = size.width / itemCount;
-    final availableWidth = size.width - tabWidth;
-
-    // Map alignment (-1 to 1) to horizontal offset
-    final left = (alignment.x + 1) / 2 * availableWidth;
-
-    // Create the base rect
-    // Note: We need to account for the padding applied to AnimatedGlassIndicator
-    // AnimatedGlassIndicator has padding: const EdgeInsets.all(4)
-    // So the rect should be inset by 4 on all sides, then inflated by expansion * thickness
-
-    final baseRect = Rect.fromLTWH(left, 0, tabWidth, size.height);
-    final paddedRect = Rect.fromLTRB(
-      baseRect.left + 4.0, // Left padding
-      baseRect.top + 4.0, // Top padding
-      baseRect.right - 4.0, // Right padding
-      baseRect.bottom - 4.0, // Bottom padding
+    // Match AnimatedGlassIndicator: pad the BAR before FractionallySizedBox
+    // divides it into tabs. Insetting each tab instead makes masks too narrow
+    // and moves their transform centers away from the visible lens.
+    final innerWidth = math.max(0.0, size.width - 8.0);
+    final tabWidth = innerWidth / itemCount;
+    final left = 4.0 + (alignment.x + 1) / 2 * (innerWidth - tabWidth);
+    final paddedRect = Rect.fromLTWH(
+      left,
+      4.0,
+      tabWidth,
+      math.max(0.0, size.height - 8.0),
     );
 
     // Apply expansion based on thickness (drag state)
@@ -924,12 +919,8 @@ class JellyClipper extends CustomClipper<Path> {
       paddedRect.bottom + (expansion.bottom * thickness),
     );
 
-    // Create rounded rect path
-    final path = Path()
-      ..addRRect(RRect.fromRectAndRadius(
-        inflatedRect,
-        Radius.circular(borderRadius),
-      ));
+    final path = LiquidRoundedSuperellipse(borderRadius: borderRadius)
+        .getOuterPath(inflatedRect);
 
     // Apply jelly physics transform around the center
     final center = inflatedRect.center;

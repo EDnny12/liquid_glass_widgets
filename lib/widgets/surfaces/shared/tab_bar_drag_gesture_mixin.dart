@@ -82,6 +82,15 @@ mixin TabDragGestureMixin<T extends StatefulWidget> on State<T> {
   /// Current horizontal alignment of the indicator in the range [-1, 1].
   double tabXAlign = 0.0;
 
+  /// The visual destination, honoring the application's committed selection.
+  ///
+  /// Only an ongoing drag or pending hybrid tap may override the selected tab.
+  /// A new press must not revive a destination rejected on the previous gesture.
+  double get visualTabAlignment =>
+      tabIsDragging || (tabIsDown && _pendingHybridTabIndex != null)
+          ? tabXAlign
+          : computeTabAlignment(tabIndex);
+
   /// Lateral sway offset in logical pixels.
   ///
   /// Driven by horizontal drag velocity — gives the bar body a subtle

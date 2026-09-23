@@ -11,6 +11,7 @@ import '../../theme/glass_theme.dart';
 import '../../types/glass_quality.dart';
 import '../../utils/draggable_indicator_physics.dart';
 import 'glass_effect.dart';
+import 'indicator_deformation_scope.dart';
 
 /// A shared component that renders the interactive "Jelly" indicator
 /// used in [GlassTabBar], [GlassSegmentedControl], and [GlassBottomBar].
@@ -285,6 +286,7 @@ class AnimatedGlassIndicator extends StatelessWidget {
 
     final bool isStdPath =
         quality == GlassQuality.standard || quality == GlassQuality.minimal;
+    final sharedTransform = IndicatorDeformationScope.maybeOf(context);
 
     // Provide the doubled radius to layout layers when superellipse is active
     // so they match the shader's true shape exactly.
@@ -414,15 +416,14 @@ class AnimatedGlassIndicator extends StatelessWidget {
     final interactiveIndicator =
         thickness > 0.01 ? shadowedGlass : const SizedBox.expand();
 
-    // Standard: background pill included inside Transform so the solid pill
-    // carries the jelly squish visually. The glass lens alone is too
-    // translucent on Standard (baseAlpha 0.08) to show the squish.
-    // Premium: glass lens only inside Transform — the Impeller SDF lens has
-    // full 3D optical contrast and carries the squish without the solid pill.
+    // Bottom bars share shape recovery across both material passes. Other
+    // consumers keep the previous standard/premium background behavior.
     final glassChild = Stack(
       clipBehavior: Clip.none,
       children: [
-        if (paintBackground && isStdPath && backgroundOpacity > 0)
+        if (paintBackground &&
+            (isStdPath || sharedTransform != null) &&
+            backgroundOpacity > 0)
           backgroundIndicator,
         if (paintGlass && fade > 0.05) interactiveIndicator,
       ],
@@ -448,42 +449,45 @@ class AnimatedGlassIndicator extends StatelessWidget {
         if (paintBackground && innerBlur > 0)
           Positioned.fromRelativeRect(
             rect: rect!,
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(borderRadius),
-              child: BackdropFilter(
-                filter: ImageFilter.blur(
-                  sigmaX: (innerBlur * backgroundOpacity)
-                      .clamp(0.001, double.infinity),
-                  sigmaY: (innerBlur * backgroundOpacity)
-                      .clamp(0.001, double.infinity),
+            child: Transform(
+              alignment: Alignment.center,
+              transform: sharedTransform ?? Matrix4.identity(),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(borderRadius),
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(
+                    sigmaX: (innerBlur * backgroundOpacity)
+                        .clamp(0.001, double.infinity),
+                    sigmaY: (innerBlur * backgroundOpacity)
+                        .clamp(0.001, double.infinity),
+                  ),
+                  child: const SizedBox.expand(),
                 ),
-                child: const SizedBox.expand(),
               ),
             ),
           ),
-        // Premium: background pill is rigid (outside Transform). The Impeller
-        // glass lens has enough 3D contrast to carry the jelly on its own.
-        if (paintBackground && !isStdPath && backgroundOpacity > 0)
+        // Preserve the rigid premium background for consumers outside the
+        // bottom-bar deformation scope (for example segmented controls).
+        if (paintBackground &&
+            !isStdPath &&
+            sharedTransform == null &&
+            backgroundOpacity > 0)
           Positioned.fromRelativeRect(
             rect: rect!,
             child: backgroundIndicator,
           ),
-        // Jelly-physics Transform.
-        // Standard: wraps both the solid background pill + glass lens so the
-        //   pill itself flexes (the only element with enough visual weight).
-        //   maxDistortion is capped at 0.35 — enough to feel organic, below the
-        //   threshold where 2D ClipPath corners start looking boxy.
-        // Premium: wraps only the glass lens. The 3D SDF shader absorbs the
-        //   full 0.8 distortion naturally via optical pinch.
+        // Bottom bars use the exact matrix supplied to their masks, including
+        // signed shape recovery. Other consumers retain velocity-only jelly.
         Positioned.fromRelativeRect(
           rect: rect!,
           child: Transform(
             alignment: Alignment.center,
-            transform: DraggableIndicatorPhysics.buildJellyTransform(
-              velocity: Offset(velocity, 0),
-              maxDistortion: isStdPath ? 0.35 : 0.8,
-              velocityScale: 10,
-            ),
+            transform: sharedTransform ??
+                DraggableIndicatorPhysics.buildJellyTransform(
+                  velocity: Offset(velocity, 0),
+                  maxDistortion: isStdPath ? 0.35 : 0.8,
+                  velocityScale: 10,
+                ),
             child: glassChild,
           ),
         ),

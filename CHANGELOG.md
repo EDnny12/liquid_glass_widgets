@@ -1,3 +1,14 @@
+# Unreleased
+
+- Bottom and searchable tab indicators now retain the active lens through a
+  bounded spring-driven shape recovery, preserving motion during rapid redirects.
+- Lens, resting pill and icon masks share the effective deformation and padded
+  superellipse geometry. Standard/minimal keep the 0.35 distortion cap; premium
+  keeps 0.8. Segmented and inline controls retain their existing motion.
+- The indicator returns to the committed selection after a rejected change and
+  stops its position, shape and material animation when Reduce Motion is enabled.
+- See [implementation and validation notes](docs/TAB_INDICATOR_SETTLING.md).
+
 # 0.21.1
 
 ## 🐛 Bug Fixes — Standard indicator parity

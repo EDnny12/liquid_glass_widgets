@@ -12,7 +12,7 @@ import 'package:flutter/material.dart';
 
 import '../../../src/renderer/liquid_glass_renderer.dart';
 import '../../../types/glass_quality.dart';
-import '../../../utils/draggable_indicator_physics.dart';
+import 'tab_indicator_motion.dart';
 import '../../../utils/glass_spring.dart';
 import '../../../theme/glass_theme.dart';
 import '../../interactive/glass_button.dart';
@@ -272,6 +272,17 @@ class SearchableTabIndicatorState extends State<SearchableTabIndicator>
     final indicatorRadius =
         widget.indicatorBorderRadius ?? widget.barBorderRadius;
 
+    // Reuse the background widget across motion frames. Its inherited
+    // dependencies and live backdrop updates continue to invalidate normally.
+    final barBackground = RepaintBoundary(
+      child: AdaptiveGlass.grouped(
+        quality: widget.quality,
+        platformViewBackdrop: widget.platformViewBackdrop,
+        shape: _barShape,
+        child: const SizedBox.expand(),
+      ),
+    );
+
     // Lateral sway: the bar body subtly follows the interactive pill during
     // horizontal drags, mimicking iOS 26 bottom bar physics. The SpringBuilder
     // animates the offset back to 0.0 when the drag ends.
@@ -306,74 +317,58 @@ class SearchableTabIndicatorState extends State<SearchableTabIndicator>
                 onTapDown: onBarTapDown,
                 onTapUp: onBarTapUp,
                 onTapCancel: onBarTapCancel,
-                child: VelocitySpringBuilder(
-                  value: tabXAlign,
-                  springWhenActive: GlassSpring.interactive(),
-                  springWhenReleased: GlassSpring.snappy(
-                    duration: const Duration(milliseconds: 350),
-                  ),
-                  active: tabIsDragging,
-                  builder: (context, value, velocity, child) {
+                child: TabIndicatorMotion(
+                  target: visualTabAlignment,
+                  pressed: tabIsDown,
+                  dragging: tabIsDragging,
+                  visible: widget.visible,
+                  itemCount: widget.tabCount,
+                  quality: widget.quality,
+                  builder:
+                      (context, value, velocity, thickness, jellyTransform) {
                     final alignment = Alignment(value, 0);
-                    return SpringBuilder(
-                      spring: GlassSpring.snappy(
-                        duration: const Duration(milliseconds: 300),
-                      ),
-                      value: widget.visible &&
-                              (tabIsDown ||
-                                  (alignment.x - targetAlignment).abs() > 0.05)
-                          ? 1.0
-                          : 0.0,
-                      builder: (context, thickness, _) {
-                        if (thickness < 0.01 &&
-                            !widget.visible &&
-                            widget.maskingQuality == MaskingQuality.high) {
-                          return Container(
-                            height: widget.barHeight,
-                            decoration: ShapeDecoration(shape: _barShape),
-                            child: AdaptiveGlass.grouped(
-                              quality: widget.quality,
-                              platformViewBackdrop: widget.platformViewBackdrop,
-                              shape: _barShape,
-                              child: Container(
-                                padding: widget.tabPadding,
-                                child: widget.childUnselected,
-                              ),
-                            ),
-                          );
-                        }
+                    if (thickness < 0.01 &&
+                        !widget.visible &&
+                        widget.maskingQuality == MaskingQuality.high) {
+                      return Container(
+                        height: widget.barHeight,
+                        decoration: ShapeDecoration(shape: _barShape),
+                        child: AdaptiveGlass.grouped(
+                          quality: widget.quality,
+                          platformViewBackdrop: widget.platformViewBackdrop,
+                          shape: _barShape,
+                          child: Container(
+                            padding: widget.tabPadding,
+                            child: widget.childUnselected,
+                          ),
+                        ),
+                      );
+                    }
 
-                        final jellyTransform =
-                            DraggableIndicatorPhysics.buildJellyTransform(
-                          velocity: Offset(velocity, 0),
-                          maxDistortion: 0.8,
-                          velocityScale: 10,
+                    switch (widget.maskingQuality) {
+                      case MaskingQuality.off:
+                        return _buildSimple(
+                          barBackground: barBackground,
+                          alignment: alignment,
+                          targetAlignment: Alignment(targetAlignment, 0),
+                          thickness: thickness,
+                          velocity: velocity,
+                          indicatorRadius: indicatorRadius,
+                          indicatorColor: indicatorColor,
                         );
-
-                        switch (widget.maskingQuality) {
-                          case MaskingQuality.off:
-                            return _buildSimple(
-                              alignment: alignment,
-                              targetAlignment: Alignment(targetAlignment, 0),
-                              thickness: thickness,
-                              velocity: velocity,
-                              indicatorRadius: indicatorRadius,
-                              indicatorColor: indicatorColor,
-                            );
-                          case MaskingQuality.high:
-                            return _buildHighQuality(
-                              alignment: alignment,
-                              thickness: thickness,
-                              velocity: velocity,
-                              jellyTransform: jellyTransform,
-                              indicatorRadius: indicatorRadius,
-                              indicatorColor: indicatorColor,
-                            );
-                        }
-                      },
-                    ); // SpringBuilder (thickness)
-                  }, // VelocitySpringBuilder builder
-                ), // VelocitySpringBuilder
+                      case MaskingQuality.high:
+                        return _buildHighQuality(
+                          barBackground: barBackground,
+                          alignment: alignment,
+                          thickness: thickness,
+                          velocity: velocity,
+                          jellyTransform: jellyTransform,
+                          indicatorRadius: indicatorRadius,
+                          indicatorColor: indicatorColor,
+                        );
+                    }
+                  },
+                ), // TabIndicatorMotion
               ), // GestureDetector
             ), // Listener
           ), // LiquidStretch
@@ -429,6 +424,7 @@ class SearchableTabIndicatorState extends State<SearchableTabIndicator>
   }
 
   Widget _buildSimple({
+    required Widget barBackground,
     required Alignment alignment,
     required Alignment targetAlignment,
     required double thickness,
@@ -448,14 +444,7 @@ class SearchableTabIndicatorState extends State<SearchableTabIndicator>
                 children: [
                   // Glass background (Cached to prevent blur re-rasterization on pill drag)
                   Positioned.fill(
-                    child: RepaintBoundary(
-                      child: AdaptiveGlass.grouped(
-                        quality: widget.quality,
-                        platformViewBackdrop: widget.platformViewBackdrop,
-                        shape: _barShape,
-                        child: const SizedBox.expand(),
-                      ),
-                    ),
+                    child: barBackground,
                   ),
 
                   // Unselected icons — all tabs in unselected style (for refraction).
@@ -512,6 +501,7 @@ class SearchableTabIndicatorState extends State<SearchableTabIndicator>
   }
 
   Widget _buildHighQuality({
+    required Widget barBackground,
     required Alignment alignment,
     required double thickness,
     required double velocity,
@@ -532,14 +522,7 @@ class SearchableTabIndicatorState extends State<SearchableTabIndicator>
                 children: [
                   // 1. Static Blur Background (Cached)
                   Positioned.fill(
-                    child: RepaintBoundary(
-                      child: AdaptiveGlass.grouped(
-                        quality: widget.quality,
-                        platformViewBackdrop: widget.platformViewBackdrop,
-                        shape: _barShape,
-                        child: const SizedBox.expand(),
-                      ),
-                    ),
+                    child: barBackground,
                   ),
 
                   // 1.5. Solid Indicator Background (drawn below icons so selected icons are vibrant)
